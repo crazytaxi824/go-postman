@@ -9,6 +9,8 @@ import (
 // JSON JSON
 var JSON = jsoniter.ConfigCompatibleWithStandardLibrary
 
+var routerNameSlice []string
+
 // RawRouterStruct RawRouterStruct
 type RawRouterStruct struct {
 	RouterName string `json:"name"`

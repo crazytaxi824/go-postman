@@ -8,7 +8,6 @@ import (
 	"model"
 	"path"
 	"strings"
-	"time"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -45,8 +44,6 @@ func main() {
 	for k := range routers {
 		routers[k].HandlersToRouters(rawHandlerSlice)
 	}
-
-	// log.Println(" ----------------------------------------- ")
 
 	// 生成url，生成 header --------------------------------------------------
 	for k := range routers {
@@ -94,11 +91,8 @@ func main() {
 		return
 	}
 
-	// log.Println(bf.String())
-
 	// 输出文件
-	now := time.Now().Format("2006-01-02T15:04:05")
-	err = action.WriteFiles(outputFileName+"-"+now+outputFileSuffix, bf.Bytes())
+	err = action.WriteFiles(*outputPath, bf.Bytes())
 	if err != nil {
 		log.Println(err.Error())
 		return

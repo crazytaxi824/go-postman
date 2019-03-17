@@ -20,16 +20,17 @@ func (router *RawRouterStruct) HandlersToRouters(handlers []string) {
 	for i := 0; i < len(handlerIndex); i++ {
 		tmp := strings.Split(handlers[handlerIndex[i]], "@pmHandler")
 		if len(tmp) > 1 {
-			handlerRef, err := ParsePMstruct(tmp[1])
+			handlerRef, err := ParsePMstructToJSONformat(tmp[1])
 			if err != nil {
+				log.Println("warning: 格式错误 ——" + handlers[handlerIndex[i]])
 				continue
 			}
 
 			data := make(map[string]string)
 			err = JSON.UnmarshalFromString(handlerRef, &data)
 			if err != nil {
+				log.Println("warning: 格式错误 —— " + handlers[handlerIndex[i]])
 				continue
-				// return errors.New(handlers[handlerIndex[i]] + " —— 格式错误")
 			}
 
 			if router.RouterName == data["name"] {
@@ -37,6 +38,7 @@ func (router *RawRouterStruct) HandlersToRouters(handlers []string) {
 					for _, handler := range handlers[handlerIndex[i]+1:] {
 						err = router.parseQueryBodyHeaders(handler)
 						if err != nil {
+							log.Println("warning: 格式错误 —— " + handler)
 							continue
 						}
 					}
@@ -44,6 +46,7 @@ func (router *RawRouterStruct) HandlersToRouters(handlers []string) {
 					for _, handler := range handlers[handlerIndex[i]+1 : handlerIndex[i+1]] {
 						err = router.parseQueryBodyHeaders(handler)
 						if err != nil {
+							log.Println("warning: 格式错误 —— " + handler)
 							continue
 						}
 					}
@@ -59,17 +62,14 @@ func (router *RawRouterStruct) parseQueryBodyHeaders(handler string) error {
 		tmpQuery := strings.Split(handler, "@pmQuery")
 		if len(tmpQuery) > 1 {
 
-			ref, err := ParsePMstruct(tmpQuery[1])
+			ref, err := ParsePMstructToJSONformat(tmpQuery[1])
 			if err != nil {
 				return err
 			}
 
-			log.Println(ref)
-
 			dataQuery := make(map[string]string)
 			err = JSON.UnmarshalFromString(ref, &dataQuery)
 			if err != nil {
-				// continue
 				return errors.New(handler + " —— 格式错误")
 			}
 
@@ -82,7 +82,7 @@ func (router *RawRouterStruct) parseQueryBodyHeaders(handler string) error {
 	} else if strings.Contains(handler, "@pmBody") {
 		tmpBody := strings.Split(handler, "@pmBody")
 		if len(tmpBody) > 1 {
-			ref, err := ParsePMstruct(tmpBody[1])
+			ref, err := ParsePMstructToJSONformat(tmpBody[1])
 			if err != nil {
 				return err
 			}
@@ -90,7 +90,6 @@ func (router *RawRouterStruct) parseQueryBodyHeaders(handler string) error {
 			dataBody := make(map[string]string)
 			err = JSON.UnmarshalFromString(ref, &dataBody)
 			if err != nil {
-				// continue
 				return errors.New(handler + " —— 格式错误")
 			}
 
@@ -115,7 +114,7 @@ func (router *RawRouterStruct) parseQueryBodyHeaders(handler string) error {
 	} else if strings.Contains(handler, "@pmHeader") {
 		tmpHeader := strings.Split(handler, "@pmHeader")
 		if len(tmpHeader) > 1 {
-			ref, err := ParsePMstruct(tmpHeader[1])
+			ref, err := ParsePMstructToJSONformat(tmpHeader[1])
 			if err != nil {
 				return err
 			}
@@ -123,7 +122,6 @@ func (router *RawRouterStruct) parseQueryBodyHeaders(handler string) error {
 			dataHeader := make(map[string]string)
 			err = JSON.UnmarshalFromString(ref, &dataHeader)
 			if err != nil {
-				// continue
 				return errors.New(handler + " —— 格式错误")
 			}
 

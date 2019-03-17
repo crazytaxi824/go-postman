@@ -40,42 +40,46 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 							tmp := strings.Split(trimBody, "@pmServer")
 
 							if len(tmp) > 1 {
-								ref, err := ParsePMstruct(tmp[1])
+								ref, err := ParsePMstructToJSONformat(tmp[1])
 								if err != nil {
+									log.Println("warning: 格式错误 —— " + string(v))
 									continue
 								}
 
 								data := make(map[string]string)
-								// err = JSON.UnmarshalFromString(tmp[1], &data)
 								err = JSON.UnmarshalFromString(ref, &data)
 								if err != nil {
-									// log.Println(string(v) + "pmServer 格式错误")
+									log.Println("warning: 格式错误 —— " + string(v))
 									continue
 								}
-								// if _, ok := data["path"]; !ok {
-								// 	log.Println("pmServer 没有\"path\"参数")
-								// }
 								*serverPath = data["path"]
 							}
 						} else if strings.Contains(trimBody, "@pmRouter") {
-
 							// 处理 router
 							tmp := strings.Split(trimBody, "@pmRouter")
 							if len(tmp) > 1 {
-								ref, err := ParsePMstruct(tmp[1])
+								ref, err := ParsePMstructToJSONformat(tmp[1])
 								if err != nil {
+									log.Println("warning: 格式错误 ——" + string(v))
 									continue
 								}
 								var router RawRouterStruct
-								// err = JSON.UnmarshalFromString(tmp[1], &router)
 								err = JSON.UnmarshalFromString(ref, &router)
-
-								router.Method = strings.ToUpper(router.Method)
 								if err != nil {
-									// log.Println(string(v) + " —— 格式错误")
+									log.Println("warning: 格式错误 ——" + string(v))
 									continue
 								}
+
+								// 判断router 是否存在，是否重名
+								if inSlice(router.RouterName, routerNameSlice) {
+									log.Println("warning: 项目中有两个相同名字的路由 @pmRouter —— " + router.RouterName)
+									continue
+								}
+
+								router.Method = strings.ToUpper(router.Method)
+
 								*routers = append(*routers, router)
+								routerNameSlice = append(routerNameSlice, router.RouterName)
 							}
 						} else if strings.Contains(trimBody, "@pmHandler") || strings.Contains(trimBody, "@pmQuery") || strings.Contains(trimBody, "@pmBody") || strings.Contains(trimBody, "@pmHeader") {
 							// 处理 pmHandler, pmQuery, pmBody, pmHeader
@@ -107,10 +111,8 @@ func inSlice(s string, ss []string) bool {
 	return false
 }
 
-// ParsePMstruct ParsePMstruct
-func ParsePMstruct(pmStruct string) (string, error) {
-	// @ApiResponse(code = CommonStatus.EXCEPTION, message = "服务器内部异常")
-	// @pmRouter(name="添加文章", method="Post", path="/m/article/add", group="文章")
+// ParsePMstructToJSONformat ParsePMstructToJSONformat
+func ParsePMstructToJSONformat(pmStruct string) (string, error) {
 	lenPM := len(pmStruct)
 	if lenPM < 2 {
 		return "", errors.New(pmStruct + "格式错误")
@@ -121,10 +123,12 @@ func ParsePMstruct(pmStruct string) (string, error) {
 	}
 
 	var finalStruct []string
-	pmSlice := strings.Split(pmStruct[1:lenPM-1], ",")
+	// pmSlice := strings.Split(pmStruct[1:lenPM-1], ",")
+	pmSlice := SplitStringsTOKV(pmStruct[1 : lenPM-1])
 	for _, v := range pmSlice {
 		f, err := parseKV(v)
 		if err != nil {
+			log.Println("info: 请检查格式 ——" + pmStruct)
 			continue
 		}
 		finalStruct = append(finalStruct, f)
@@ -132,11 +136,77 @@ func ParsePMstruct(pmStruct string) (string, error) {
 	return "{" + strings.Join(finalStruct, ",") + "}", nil
 }
 
+// SplitStringsTOKV SplitStringsTOKV
+func SplitStringsTOKV(str string) []string {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println(r)
+		}
+	}()
+
+	var finalSlice []string
+
+	var indexSlice []int
+	for k, v := range str {
+		if string(v) == "," {
+			indexSlice = append(indexSlice, k)
+		}
+	}
+
+	if len(indexSlice) == 0 {
+		finalSlice = append(finalSlice, str)
+		return finalSlice
+	}
+
+	var finalIndex []int
+	lenIndex := len(indexSlice)
+	// var mark bool
+	for ii := lenIndex - 1; ii >= 0; ii-- {
+		if ii > 0 {
+			for i := indexSlice[ii] - 1; i >= indexSlice[ii-1]+1; i-- {
+				// log.Println(i)
+				if string(str[i]) == " " {
+					continue
+				} else if string(str[i]) == "\"" {
+					finalIndex = append(finalIndex, indexSlice[ii])
+				} else {
+					break
+				}
+			}
+		} else {
+			for i := indexSlice[ii] - 1; i >= 0; i-- {
+				// log.Println(i)
+				if string(str[i]) == " " {
+					continue
+				} else if string(str[i]) == "\"" {
+					finalIndex = append(finalIndex, indexSlice[ii])
+				} else {
+					break
+				}
+			}
+		}
+	}
+
+	lenIndex = len(finalIndex)
+	lastIndex := len(str)
+	for _, index := range finalIndex {
+		if index == finalIndex[lenIndex-1] {
+			finalSlice = append(finalSlice, str[index+1:lastIndex])
+			finalSlice = append(finalSlice, str[:index])
+		} else {
+			finalSlice = append(finalSlice, str[index+1:lastIndex])
+			lastIndex = index
+		}
+	}
+
+	return finalSlice
+}
+
 func parseKV(KVstr string) (string, error) {
 	KVSlice := strings.SplitN(KVstr, "=", 2)
 	var jsonStr []string
 	if len(KVSlice) < 2 {
-		key := strings.TrimSpace(KVSlice[0])
+		key := strings.ToLower(strings.TrimSpace(KVSlice[0]))
 		if key == "" {
 			return "", errors.New("格式错误")
 		}
@@ -150,7 +220,7 @@ func parseKV(KVstr string) (string, error) {
 		return "", errors.New("格式错误")
 	} else {
 		// 添加 k
-		key := strings.TrimSpace(KVSlice[0])
+		key := strings.ToLower(strings.TrimSpace(KVSlice[0]))
 		if key == "" {
 			return "", errors.New("格式错误")
 		}

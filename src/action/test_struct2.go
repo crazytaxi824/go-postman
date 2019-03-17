@@ -3,6 +3,7 @@ package action
 // @pmServer(path = "http://127.0.0.1:18080")
 
 // @pmRouter(name="添加文章", method="Post", path="/m/article/add", group="文章")
+// @pmRouter(name="添加文章", method="Post", path="/m/article/add", group="文章")
 
 // @pmRouter(name= "编辑文章",method= "Post",path= "/m/article/edit",group= "文章")
 
@@ -16,7 +17,7 @@ package action
 
 // @pmQuery(key= "id",desc= "用户id")
 
-// @pmQuery(key="column",value= "name",desc= "需要的字段")
+// @pmQuery(key="column",value= "id,name,age",desc= "需要的字段")
 
 // @pmHandler(name="编辑文章")
 
