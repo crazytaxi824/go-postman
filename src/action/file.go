@@ -40,7 +40,7 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 							tmp := strings.Split(trimBody, "@pmServer")
 
 							if len(tmp) > 1 {
-								ref, err := ParsePMstructToJSONformat(tmp[1])
+								ref, err := ParsePMstructToJSONformat(strings.TrimSpace(tmp[1]))
 								if err != nil {
 									log.Println("warning: 格式错误 —— " + string(v))
 									continue
@@ -58,7 +58,7 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 							// 处理 router
 							tmp := strings.Split(trimBody, "@pmRouter")
 							if len(tmp) > 1 {
-								ref, err := ParsePMstructToJSONformat(tmp[1])
+								ref, err := ParsePMstructToJSONformat(strings.TrimSpace(tmp[1]))
 								if err != nil {
 									log.Println("warning: 格式错误 ——" + string(v))
 									continue
