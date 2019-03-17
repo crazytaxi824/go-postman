@@ -7,4 +7,4 @@
 /debug
 /config.ini
 /.history
-/.bak
+*.bak
