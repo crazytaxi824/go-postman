@@ -8,47 +8,44 @@ import (
 )
 
 // GenHeaderAndURLStruct 生成url和header
-func GenHeaderAndURLStruct(routersPointer *[]RawRouterStruct, serverPath string) (err error) {
-	routers := *routersPointer
-	for k := range routers {
-		routers[k].URL, err = rawURLtoRequestURL(serverPath+routers[k].RouterPath, routers[k].Querys)
-		if err != nil {
-			log.Println(err.Error())
-			return err
+func (router *RawRouterStruct) GenHeaderAndURLStruct(serverPath string) (err error) {
+	err = router.rawURLtoRequestURL(serverPath + router.RouterPath)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	// 生成 header
+
+	var hasContentType bool
+	if len(router.Files) == 0 && len(router.Texts) > 0 {
+		// 判断header中是否存在"Content-Type"
+		for _, v := range router.Headers {
+			if v.Key == "Content-Type" {
+				hasContentType = true
+			}
 		}
 
-		// 生成 header
+		if !hasContentType {
+			var headerUrlencode model.HeaderStruct
+			headerUrlencode.Type = "text"
+			headerUrlencode.Key = "Content-Type"
+			headerUrlencode.Name = "Content-Type"
+			headerUrlencode.Value = "application/x-www-form-urlencoded"
+			headerUrlencode.Description = ""
 
-		var hasContentType bool
-		if len(routers[k].Files) == 0 && len(routers[k].Texts) > 0 {
-			// 判断header中是否存在"Content-Type"
-			for _, v := range routers[k].Headers {
-				if v.Key == "Content-Type" {
-					hasContentType = true
-				}
-			}
-
-			if !hasContentType {
-				var headerUrlencode model.HeaderStruct
-				headerUrlencode.Type = "text"
-				headerUrlencode.Key = "Content-Type"
-				headerUrlencode.Name = "Content-Type"
-				headerUrlencode.Value = "application/x-www-form-urlencoded"
-				headerUrlencode.Description = ""
-
-				routers[k].Headers = append(routers[k].Headers, headerUrlencode)
-			}
-		} else {
-			if len(routers[k].Headers) < 1 {
-				routers[k].Headers = make([]model.HeaderStruct, 0)
-			}
+			router.Headers = append(router.Headers, headerUrlencode)
+		}
+	} else {
+		if len(router.Headers) < 1 {
+			router.Headers = make([]model.HeaderStruct, 0)
 		}
 	}
 	return nil
 }
 
 // rawURLtoRequestURL 通过query生成为 model.URLStruct
-func rawURLtoRequestURL(path string, query []model.QueryStruct) (model.URLStruct, error) {
+func (router *RawRouterStruct) rawURLtoRequestURL(path string) error {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Println(r)
@@ -59,12 +56,13 @@ func rawURLtoRequestURL(path string, query []model.QueryStruct) (model.URLStruct
 
 	prefix := strings.Split(path, "://")
 	if len(prefix) < 2 {
-		return model.URLStruct{}, errors.New("请求路径错误")
+		return errors.New("请求路径错误")
 	}
 
 	// 生成 protocol
 	urlStruct.Protocol = prefix[0]
 
+	// 生成path
 	rawPath := strings.Split(prefix[1], "/")
 
 	// 生成 host and port
@@ -73,7 +71,7 @@ func rawURLtoRequestURL(path string, query []model.QueryStruct) (model.URLStruct
 	if length == 2 {
 		urlStruct.Port = rawHostAndPort[1]
 	} else if length > 2 {
-		return model.URLStruct{}, errors.New("请求路径错误")
+		return errors.New("请求路径错误")
 	}
 	rawHost := strings.Split(rawHostAndPort[0], ".")
 	urlStruct.Host = rawHost
@@ -85,16 +83,18 @@ func rawURLtoRequestURL(path string, query []model.QueryStruct) (model.URLStruct
 	}
 
 	// 生成 query
-	urlStruct.Query = query
+	urlStruct.Query = router.Querys
 
 	// 生成 raw
 	urlStruct.Raw = path
-	if len(query) > 0 {
-		for _, v := range query {
+	if len(router.Querys) > 0 {
+		for _, v := range router.Querys {
 			urlStruct.Raw = urlStruct.Raw + "&" + v.Key + "=" + v.Value
 		}
 		urlStruct.Raw = strings.Replace(urlStruct.Raw, "&", "?", 1)
 	}
 
-	return urlStruct, nil
+	router.URL = urlStruct
+
+	return nil
 }

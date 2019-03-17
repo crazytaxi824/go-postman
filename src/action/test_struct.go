@@ -8,12 +8,6 @@ package action
 
 // @pmRouter{"name": "文章列表","method": "Get","path": "/m/article/list","group": "文章"}
 
-// @pmRouter{"name": "添加文章分类","method": "Post","path": "/m/article/class/add","group": "文章分类"}
-
-// @pmRouter{"name": "编辑文章分类","method": "Post","path": "/m/article/class/edit","group": "文章分类"}
-
-// @pmRouter{"name": "文章分类列表","method": "Get","path": "/m/article/class/list","group": "文章分类"}
-
 // @pmRouter{"name": "首页","method": "Get","path": "/m/home"}
 
 // @pmHandler{"name": "文章列表"}
@@ -31,3 +25,13 @@ package action
 // @pmBody{"key":"content","desc":"文章内容"}
 
 // @pmBody{"key":"author","desc":"作者"}
+
+// @pmHandler{"name":"添加文章"}
+
+// @pmBody{"key":"title","desc":"文章标题"}
+
+// @pmBody{"key":"content","desc":"文章内容"}
+
+// @pmBody{"key":"author","desc":"作者"}
+
+// @pmBody{"key":"author","desc":"图片","type":"file","src":"/eee.png"}

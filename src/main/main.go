@@ -3,11 +3,9 @@ package main
 import (
 	"action"
 	"bytes"
-	"errors"
-	"io/ioutil"
+	"flag"
 	"log"
 	"model"
-	"path"
 	"strings"
 
 	jsoniter "github.com/json-iterator/go"
@@ -19,27 +17,44 @@ var JSON = jsoniter.ConfigCompatibleWithStandardLibrary
 func main() {
 	log.SetFlags(log.Lshortfile)
 
-	rootPath := "./src"
+	rootPath := flag.String("p", "./src", "指定项目路径，默认从src文件夹下开始读取")
+	ignoreFile := flag.String("i", "vendor", "不读取该文件夹下的所有文件，用 | 分隔多个文件夹")
+	outputPath := flag.String("o", "./newPostman.json", "输出json文件的路径和名称")
+	flag.Parse()
+
+	// rootPath := "./src"
+	ignoreFiles := strings.Split(*ignoreFile, "|")
+	for k := range ignoreFiles {
+		ignoreFiles[k] = strings.TrimSpace(ignoreFiles[k])
+	}
 
 	// 读取文件夹下所有go文件 -----------------------------------------------------
 	var serverPath string
 	var routers []action.RawRouterStruct
 	var rawHandlerSlice []string
-	err := readAllFiles(rootPath, &serverPath, &routers, &rawHandlerSlice)
+	err := action.ReadAllFiles(*rootPath, &serverPath, ignoreFiles, &routers, &rawHandlerSlice)
 	if err != nil {
 		log.Println(err.Error())
 		return
 	}
 
-	log.Println(" ----------------------------------------- ")
-
 	// 把处理器传入路由 ---------------------------------------------------------
-	action.HandlersToRouters(&routers, rawHandlerSlice)
+	for k := range routers {
+		routers[k].HandlersToRouters(rawHandlerSlice)
+	}
+
+	// log.Println(" ----------------------------------------- ")
 
 	// 生成url，生成 header --------------------------------------------------
-	action.GenHeaderAndURLStruct(&routers, serverPath)
+	for k := range routers {
+		err = routers[k].GenHeaderAndURLStruct(serverPath)
+		if err != nil {
+			log.Println(err.Error())
+			return
+		}
+	}
 
-	// // 给路由分组
+	// 给路由分组
 	groups := action.GroupRouters(routers)
 
 	// ---------------------------------------------------------------------
@@ -74,78 +89,14 @@ func main() {
 		return
 	}
 
-	log.Println(bf.String())
+	// log.Println(bf.String())
 
-	// TODO 输出文件
-
-}
-
-// readAllFiles 读取所有数据
-func readAllFiles(rootPath string, serverPath *string, routers *[]action.RawRouterStruct, rawHandlerSlice *[]string) error {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Println(r)
-		}
-	}()
-
-	files, _ := ioutil.ReadDir(rootPath)
-	for _, file := range files {
-		if file.IsDir() {
-			if file.Name() != "vendor" {
-				readAllFiles(rootPath+"/"+file.Name(), serverPath, routers, rawHandlerSlice)
-			}
-		} else {
-			if path.Ext(path.Base(file.Name())) == ".go" {
-
-				body, err := ioutil.ReadFile(rootPath + "/" + file.Name())
-				if err != nil {
-					return err
-				}
-
-				bodySlice := bytes.Split(body, []byte("\n"))
-
-				for _, v := range bodySlice {
-
-					res := string(bytes.TrimSpace(v))
-
-					if len(res) > 4 {
-						if res[:2] == "//" {
-							if strings.Contains(res, "@pmServer") {
-								// 处理 serverPath
-								tmp := strings.Split(res, "@pmServer")
-								if len(tmp) > 1 {
-									data := make(map[string]string)
-									err = JSON.UnmarshalFromString(tmp[1], &data)
-									if err != nil {
-										continue
-										// return errors.New(res + " —— 格式错误")
-									}
-									if _, ok := data["path"]; !ok {
-										return errors.New(res + " —— 没有 path 参数")
-									}
-									*serverPath = data["path"]
-								}
-							} else if strings.Contains(res, "@pmRouter") {
-								// 处理 router
-								tmp := strings.Split(res, "@pmRouter")
-								if len(tmp) > 1 {
-									var router action.RawRouterStruct
-									err = JSON.UnmarshalFromString(tmp[1], &router)
-									router.Method = strings.ToUpper(router.Method)
-									if err != nil {
-										continue
-										// return errors.New(res + " —— 格式错误")
-									}
-									*routers = append(*routers, router)
-								}
-							} else if strings.Contains(res, "@pmHandler") || strings.Contains(res, "@pmQuery") || strings.Contains(res, "@pmBody") || strings.Contains(res, "@pmHeader") {
-								*rawHandlerSlice = append(*rawHandlerSlice, res)
-							}
-						}
-					}
-				}
-			}
-		}
+	// 输出文件
+	err = action.WriteFiles(*outputPath, bf.Bytes())
+	if err != nil {
+		log.Println(err.Error())
+		return
 	}
-	return nil
+
+	log.Println("文件写入完成")
 }
