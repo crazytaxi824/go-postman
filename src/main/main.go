@@ -6,7 +6,9 @@ import (
 	"flag"
 	"log"
 	"model"
+	"path"
 	"strings"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -68,7 +70,9 @@ func main() {
 
 	// 生成 pm 文件 ---------------------------------------------
 	var pm model.PostmanStruct
-	pm.Info.Name = "postman-test"
+	outputFileSuffix := path.Ext(*outputPath)
+	outputFileName := strings.TrimSuffix(path.Base(*outputPath), outputFileSuffix)
+	pm.Info.Name = outputFileName
 	pm.Info.Schema = "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 
 	for k := range folders {
@@ -93,7 +97,8 @@ func main() {
 	// log.Println(bf.String())
 
 	// 输出文件
-	err = action.WriteFiles(*outputPath, bf.Bytes())
+	now := time.Now().Format("2006-01-02T15:04:05")
+	err = action.WriteFiles(outputFileName+"-"+now+outputFileSuffix, bf.Bytes())
 	if err != nil {
 		log.Println(err.Error())
 		return
