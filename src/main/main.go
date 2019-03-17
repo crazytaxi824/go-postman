@@ -16,9 +16,10 @@ var JSON = jsoniter.ConfigCompatibleWithStandardLibrary
 
 func main() {
 	log.SetFlags(log.Lshortfile)
+	var err error
 
 	rootPath := flag.String("p", "./src", "指定项目路径，默认从src文件夹下开始读取")
-	ignoreFile := flag.String("i", "vendor", "不读取该文件夹下的所有文件，用 | 分隔多个文件夹")
+	ignoreFile := flag.String("i", "vendor", "不读取指定文件夹名称下的所有文件, 用 | 分隔多个文件夹")
 	outputPath := flag.String("o", "./newPostman.json", "输出json文件的路径和名称")
 	flag.Parse()
 
@@ -32,7 +33,7 @@ func main() {
 	var serverPath string
 	var routers []action.RawRouterStruct
 	var rawHandlerSlice []string
-	err := action.ReadAllFiles(*rootPath, &serverPath, ignoreFiles, &routers, &rawHandlerSlice)
+	err = action.ReadAllFiles(*rootPath, &serverPath, ignoreFiles, &routers, &rawHandlerSlice)
 	if err != nil {
 		log.Println(err.Error())
 		return

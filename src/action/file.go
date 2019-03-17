@@ -2,7 +2,6 @@ package action
 
 import (
 	"bytes"
-	"errors"
 	"io/ioutil"
 	"log"
 	"strings"
@@ -19,7 +18,6 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 	files, _ := ioutil.ReadDir(rootPath)
 	for _, file := range files {
 		if file.IsDir() {
-			// if file.Name() != "vendor" {
 			if !inSlice(file.Name(), ignoreFolders) {
 				ReadAllFiles(rootPath+"/"+file.Name(), serverPath, ignoreFolders, routers, rawHandlerSlice)
 			}
@@ -32,41 +30,42 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 			bodySlice := bytes.Split(body, []byte("\n"))
 
 			for _, v := range bodySlice {
+				trimBody := string(bytes.TrimSpace(v))
+				if len(trimBody) > 4 {
+					if trimBody[:2] == "//" {
+						if strings.Contains(trimBody, "@pmServer") {
 
-				res := string(bytes.TrimSpace(v))
-
-				if len(res) > 4 {
-					if res[:2] == "//" {
-						if strings.Contains(res, "@pmServer") {
 							// 处理 serverPath
-							tmp := strings.Split(res, "@pmServer")
+							tmp := strings.Split(trimBody, "@pmServer")
 							if len(tmp) > 1 {
 								data := make(map[string]string)
 								err = JSON.UnmarshalFromString(tmp[1], &data)
 								if err != nil {
+									// log.Println(string(v) + "pmServer 格式错误")
 									continue
-									// return errors.New(res + " —— 格式错误")
 								}
-								if _, ok := data["path"]; !ok {
-									return errors.New(res + " —— 没有 path 参数")
-								}
+								// if _, ok := data["path"]; !ok {
+								// 	log.Println("pmServer 没有\"path\"参数")
+								// }
 								*serverPath = data["path"]
 							}
-						} else if strings.Contains(res, "@pmRouter") {
+						} else if strings.Contains(trimBody, "@pmRouter") {
+
 							// 处理 router
-							tmp := strings.Split(res, "@pmRouter")
+							tmp := strings.Split(trimBody, "@pmRouter")
 							if len(tmp) > 1 {
 								var router RawRouterStruct
 								err = JSON.UnmarshalFromString(tmp[1], &router)
 								router.Method = strings.ToUpper(router.Method)
 								if err != nil {
+									// log.Println(string(v) + " —— 格式错误")
 									continue
-									// return errors.New(res + " —— 格式错误")
 								}
 								*routers = append(*routers, router)
 							}
-						} else if strings.Contains(res, "@pmHandler") || strings.Contains(res, "@pmQuery") || strings.Contains(res, "@pmBody") || strings.Contains(res, "@pmHeader") {
-							*rawHandlerSlice = append(*rawHandlerSlice, res)
+						} else if strings.Contains(trimBody, "@pmHandler") || strings.Contains(trimBody, "@pmQuery") || strings.Contains(trimBody, "@pmBody") || strings.Contains(trimBody, "@pmHeader") {
+							// 处理 pmHandler, pmQuery, pmBody, pmHeader
+							*rawHandlerSlice = append(*rawHandlerSlice, trimBody)
 						}
 					}
 				}
