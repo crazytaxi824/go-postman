@@ -16,7 +16,7 @@ package action
 
 // @pmQuery{"key": "id","desc": "用户id"}
 
-// @pmQuery{"key": "column","value": "id,name,age","desc": "需要的字段"}
+// @pmQuery{"key": "column","value": "age","desc": "需要的字段"}
 
 // @pmHandler{"name":"编辑文章"}
 

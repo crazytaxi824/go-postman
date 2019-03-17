@@ -2,6 +2,7 @@ package action
 
 import (
 	"errors"
+	"log"
 	"model"
 	"strings"
 )
@@ -19,8 +20,13 @@ func (router *RawRouterStruct) HandlersToRouters(handlers []string) {
 	for i := 0; i < len(handlerIndex); i++ {
 		tmp := strings.Split(handlers[handlerIndex[i]], "@pmHandler")
 		if len(tmp) > 1 {
+			handlerRef, err := ParsePMstruct(tmp[1])
+			if err != nil {
+				continue
+			}
+
 			data := make(map[string]string)
-			err := JSON.UnmarshalFromString(tmp[1], &data)
+			err = JSON.UnmarshalFromString(handlerRef, &data)
 			if err != nil {
 				continue
 				// return errors.New(handlers[handlerIndex[i]] + " —— 格式错误")
@@ -53,8 +59,15 @@ func (router *RawRouterStruct) parseQueryBodyHeaders(handler string) error {
 		tmpQuery := strings.Split(handler, "@pmQuery")
 		if len(tmpQuery) > 1 {
 
+			ref, err := ParsePMstruct(tmpQuery[1])
+			if err != nil {
+				return err
+			}
+
+			log.Println(ref)
+
 			dataQuery := make(map[string]string)
-			err := JSON.UnmarshalFromString(tmpQuery[1], &dataQuery)
+			err = JSON.UnmarshalFromString(ref, &dataQuery)
 			if err != nil {
 				// continue
 				return errors.New(handler + " —— 格式错误")
@@ -67,10 +80,15 @@ func (router *RawRouterStruct) parseQueryBodyHeaders(handler string) error {
 			router.Querys = append(router.Querys, query)
 		}
 	} else if strings.Contains(handler, "@pmBody") {
-		tmpQuery := strings.Split(handler, "@pmBody")
-		if len(tmpQuery) > 1 {
+		tmpBody := strings.Split(handler, "@pmBody")
+		if len(tmpBody) > 1 {
+			ref, err := ParsePMstruct(tmpBody[1])
+			if err != nil {
+				return err
+			}
+
 			dataBody := make(map[string]string)
-			err := JSON.UnmarshalFromString(tmpQuery[1], &dataBody)
+			err = JSON.UnmarshalFromString(ref, &dataBody)
 			if err != nil {
 				// continue
 				return errors.New(handler + " —— 格式错误")
@@ -97,8 +115,13 @@ func (router *RawRouterStruct) parseQueryBodyHeaders(handler string) error {
 	} else if strings.Contains(handler, "@pmHeader") {
 		tmpHeader := strings.Split(handler, "@pmHeader")
 		if len(tmpHeader) > 1 {
+			ref, err := ParsePMstruct(tmpHeader[1])
+			if err != nil {
+				return err
+			}
+
 			dataHeader := make(map[string]string)
-			err := JSON.UnmarshalFromString(tmpHeader[1], &dataHeader)
+			err = JSON.UnmarshalFromString(ref, &dataHeader)
 			if err != nil {
 				// continue
 				return errors.New(handler + " —— 格式错误")
