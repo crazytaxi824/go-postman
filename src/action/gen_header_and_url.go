@@ -56,7 +56,7 @@ func (router *RawRouterStruct) rawURLtoRequestURL(path string) error {
 
 	prefix := strings.Split(path, "://")
 	if len(prefix) < 2 {
-		return errors.New("请求路径错误")
+		return errors.New("server path error")
 	}
 
 	// 生成 protocol
@@ -71,7 +71,7 @@ func (router *RawRouterStruct) rawURLtoRequestURL(path string) error {
 	if length == 2 {
 		urlStruct.Port = rawHostAndPort[1]
 	} else if length > 2 {
-		return errors.New("请求路径错误")
+		return errors.New("server path error")
 	}
 	rawHost := strings.Split(rawHostAndPort[0], ".")
 	urlStruct.Host = rawHost

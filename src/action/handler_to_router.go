@@ -22,14 +22,14 @@ func (router *RawRouterStruct) HandlersToRouters(handlers []string) {
 		if len(tmp) > 1 {
 			handlerRef, err := ParsePMstructToJSONformat(strings.TrimSpace(tmp[1]))
 			if err != nil {
-				log.Println("warning: 格式错误 ——" + handlers[handlerIndex[i]])
+				log.Println("warning: format error ——" + handlers[handlerIndex[i]])
 				continue
 			}
 
 			data := make(map[string]string)
 			err = JSON.UnmarshalFromString(handlerRef, &data)
 			if err != nil {
-				log.Println("warning: 格式错误 —— " + handlers[handlerIndex[i]])
+				log.Println("warning: format error —— " + handlers[handlerIndex[i]])
 				continue
 			}
 
@@ -38,7 +38,7 @@ func (router *RawRouterStruct) HandlersToRouters(handlers []string) {
 					for _, handler := range handlers[handlerIndex[i]+1:] {
 						err = router.parseQueryBodyHeaders(handler)
 						if err != nil {
-							log.Println("warning: 格式错误 —— " + handler)
+							log.Println("warning: format error —— " + handler)
 							continue
 						}
 					}
@@ -46,7 +46,7 @@ func (router *RawRouterStruct) HandlersToRouters(handlers []string) {
 					for _, handler := range handlers[handlerIndex[i]+1 : handlerIndex[i+1]] {
 						err = router.parseQueryBodyHeaders(handler)
 						if err != nil {
-							log.Println("warning: 格式错误 —— " + handler)
+							log.Println("warning: format error —— " + handler)
 							continue
 						}
 					}
@@ -70,7 +70,7 @@ func (router *RawRouterStruct) parseQueryBodyHeaders(handler string) error {
 			dataQuery := make(map[string]string)
 			err = JSON.UnmarshalFromString(ref, &dataQuery)
 			if err != nil {
-				return errors.New(handler + " —— 格式错误")
+				return errors.New(handler + " —— format error")
 			}
 
 			var query model.QueryStruct
@@ -90,7 +90,7 @@ func (router *RawRouterStruct) parseQueryBodyHeaders(handler string) error {
 			dataBody := make(map[string]string)
 			err = JSON.UnmarshalFromString(ref, &dataBody)
 			if err != nil {
-				return errors.New(handler + " —— 格式错误")
+				return errors.New(handler + " —— format error")
 			}
 
 			if dataBody["type"] == "file" {
@@ -122,7 +122,7 @@ func (router *RawRouterStruct) parseQueryBodyHeaders(handler string) error {
 			dataHeader := make(map[string]string)
 			err = JSON.UnmarshalFromString(ref, &dataHeader)
 			if err != nil {
-				return errors.New(handler + " —— 格式错误")
+				return errors.New(handler + " —— format error")
 			}
 
 			var header model.HeaderStruct

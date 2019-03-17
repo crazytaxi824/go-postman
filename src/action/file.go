@@ -42,14 +42,14 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 							if len(tmp) > 1 {
 								ref, err := ParsePMstructToJSONformat(strings.TrimSpace(tmp[1]))
 								if err != nil {
-									log.Println("warning: 格式错误 —— " + string(v))
+									log.Println("warning: format error —— " + string(v))
 									continue
 								}
 
 								data := make(map[string]string)
 								err = JSON.UnmarshalFromString(ref, &data)
 								if err != nil {
-									log.Println("warning: 格式错误 —— " + string(v))
+									log.Println("warning: format error  —— " + string(v))
 									continue
 								}
 								*serverPath = data["path"]
@@ -60,19 +60,19 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 							if len(tmp) > 1 {
 								ref, err := ParsePMstructToJSONformat(strings.TrimSpace(tmp[1]))
 								if err != nil {
-									log.Println("warning: 格式错误 ——" + string(v))
+									log.Println("warning: format error  ——" + string(v))
 									continue
 								}
 								var router RawRouterStruct
 								err = JSON.UnmarshalFromString(ref, &router)
 								if err != nil {
-									log.Println("warning: 格式错误 ——" + string(v))
+									log.Println("warning: format error  ——" + string(v))
 									continue
 								}
 
 								// 判断router 是否存在，是否重名
 								if inSlice(router.RouterName, routerNameSlice) {
-									log.Println("warning: 项目中有两个相同名字的路由 @pmRouter —— " + router.RouterName)
+									log.Println("warning: same name in multi Routers @pmRouter —— " + router.RouterName)
 									continue
 								}
 
@@ -115,11 +115,11 @@ func inSlice(s string, ss []string) bool {
 func ParsePMstructToJSONformat(pmStruct string) (string, error) {
 	lenPM := len(pmStruct)
 	if lenPM < 2 {
-		return "", errors.New(pmStruct + "格式错误")
+		return "", errors.New(pmStruct + "format error")
 	}
 
 	if pmStruct[0] != []byte("(")[0] || pmStruct[lenPM-1] != []byte(")")[0] {
-		return "", errors.New(pmStruct + "格式错误")
+		return "", errors.New(pmStruct + "format error")
 	}
 
 	var finalStruct []string
@@ -128,7 +128,7 @@ func ParsePMstructToJSONformat(pmStruct string) (string, error) {
 	for _, v := range pmSlice {
 		f, err := parseKV(v)
 		if err != nil {
-			log.Println("info: 请检查格式 ——" + pmStruct)
+			log.Println("info: check format ——" + pmStruct)
 			continue
 		}
 		finalStruct = append(finalStruct, f)
@@ -208,7 +208,7 @@ func parseKV(KVstr string) (string, error) {
 	if len(KVSlice) < 2 {
 		key := strings.ToLower(strings.TrimSpace(KVSlice[0]))
 		if key == "" {
-			return "", errors.New("格式错误")
+			return "", errors.New("format error")
 		}
 
 		// 添加 k
@@ -217,12 +217,12 @@ func parseKV(KVstr string) (string, error) {
 		jsonStr = append(jsonStr, "\"\"")
 
 	} else if len(KVSlice) > 2 {
-		return "", errors.New("格式错误")
+		return "", errors.New("format error")
 	} else {
 		// 添加 k
 		key := strings.ToLower(strings.TrimSpace(KVSlice[0]))
 		if key == "" {
-			return "", errors.New("格式错误")
+			return "", errors.New("format error")
 		}
 		jsonStr = append(jsonStr, "\""+key+"\"")
 
@@ -233,7 +233,7 @@ func parseKV(KVstr string) (string, error) {
 			jsonStr = append(jsonStr, "\"\"")
 		} else {
 			if value[0] != []byte("\"")[0] || value[lenV-1] != []byte("\"")[0] {
-				return "", errors.New("格式错误")
+				return "", errors.New("format error")
 			}
 			jsonStr = append(jsonStr, value)
 		}

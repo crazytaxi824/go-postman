@@ -19,9 +19,9 @@ func main() {
 	log.SetFlags(log.Lshortfile)
 	var err error
 
-	rootPath := flag.String("p", "./src", "指定项目路径，默认从src文件夹下开始读取")
-	ignoreFile := flag.String("i", "vendor", "不读取指定文件夹名称下的所有文件, 用 | 分隔多个文件夹")
-	outputPath := flag.String("o", "./newPostman.json", "输出json文件的路径和名称")
+	rootPath := flag.String("p", "./src", "read all files from this path, including sub folders")
+	ignoreFile := flag.String("i", "vendor", "folder names, ignore multi folders, using | to split")
+	outputPath := flag.String("o", "./newPostman.json", "output file name")
 	flag.Parse()
 
 	// rootPath := "./src"
@@ -98,5 +98,5 @@ func main() {
 		return
 	}
 
-	log.Println("文件写入完成")
+	log.Println("gen Postman file completed!")
 }
