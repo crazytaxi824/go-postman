@@ -2,36 +2,36 @@ package action
 
 // @ApiServer(path = "http://127.0.0.1:18080")
 
-// @ApiRouter(name="添加文章", method="Post", path="/m/article/add", group="文章")
+// @ApiRouter(name="add article", method="Post", path="/m/article/add", group="article")
 
-// @ApiRouter(name= "编辑文章",method= "Post",path= "/m/article/edit",group= "文章")
+// @ApiRouter(name= "edit article",method= "Post",path= "/m/article/edit",group= "article")
 
-// @ApiRouter(name= "文章列表",method= "Get",path= "/m/article/list",group= "文章")
+// @ApiRouter(name= "list article",method= "Get",path= "/m/article/list",group= "article")
 
-// @ApiRouter(name= "首页",method= "Get",path= "/m/home")
+// @ApiRouter(name= "home",method= "Get",path= "/m/home")
 
-// @ApiHandler(name= "文章列表")
+// @ApiHandler(name= "list article")
 
-// @ApiHeader(key="header",value="value",desc="header描述")
+// @ApiHeader(key="header",value="value",desc="header description")
 
 // @ApiQuery(key= "id",desc= "用户id")
 
-// @ApiQuery(key="column",value= "id,name,age",desc= "需要的字段")
+// @ApiQuery(key="column",value= "id,name,age",desc= "columns you need")
 
-// @ApiHandler(name="编辑文章")
+// @ApiHandler(name="edit article")
 
-// @ApiBody(key="title",desc="文章标题")
+// @ApiBody(key="title",desc="article title")
 
-// @ApiBody(key="content",desc="文章内容")
+// @ApiBody(key="content",desc="article content")
 
-// @ApiBody(key="author",desc="作者")
+// @ApiBody(key="author",desc="author")
 
-// @ApiHandler(name="添加文章")
+// @ApiHandler(name="add article")
 
-// @ApiBody(key="title",desc="文章标题")
+// @ApiBody(key="title",desc="article title")
 
-// @ApiBody(key="content",desc="文章内容")
+// @ApiBody(key="content",desc="article content")
 
-// @ApiBody(key="author",desc="作者")
+// @ApiBody(key="author",desc="author")
 
-// @ApiBody(key="author",desc="图片",type="file",src="/eee.png")
+// @ApiBody(key="author",desc="article picture",type="file",src="/eee.png")
