@@ -12,6 +12,7 @@ import (
 func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, routers *[]RawRouterStruct, rawHandlerSlice *[]string) error {
 	defer func() {
 		if r := recover(); r != nil {
+			log.Println("ReadAllFiles")
 			log.Println(r)
 		}
 	}()
@@ -138,6 +139,7 @@ func ParsePMstructToJSONformat(pmStruct string) (string, error) {
 
 // SplitStringsTOKV SplitStringsTOKV
 func SplitStringsTOKV(str string) []string {
+	// str = `key="note", value="", desc="备注", type="", src=""`
 	defer func() {
 		if r := recover(); r != nil {
 			log.Println(r)
@@ -145,7 +147,6 @@ func SplitStringsTOKV(str string) []string {
 	}()
 
 	var finalSlice []string
-
 	var indexSlice []int
 	for k, v := range str {
 		if string(v) == "," {
@@ -169,6 +170,7 @@ func SplitStringsTOKV(str string) []string {
 					continue
 				} else if string(str[i]) == "\"" {
 					finalIndex = append(finalIndex, indexSlice[ii])
+					break
 				} else {
 					break
 				}
@@ -180,6 +182,7 @@ func SplitStringsTOKV(str string) []string {
 					continue
 				} else if string(str[i]) == "\"" {
 					finalIndex = append(finalIndex, indexSlice[ii])
+					break
 				} else {
 					break
 				}
