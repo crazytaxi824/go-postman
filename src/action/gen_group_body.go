@@ -31,6 +31,7 @@ func GenGroupBody(groupsPointer *map[string][]RawRouterStruct) {
 				bodyData = append(bodyData, v)
 			}
 
+			// 判断是用 urlencoded 还是 formdata
 			if mark {
 				finalBodyData["mode"] = "formdata"
 				finalBodyData["formdata"] = bodyData

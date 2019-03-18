@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// HandlersToRouters HandlersToRouters
+// HandlersToRouters 将 handler 的所有参数传到对应的 router 中
 func (router *RawRouterStruct) HandlersToRouters(handlers []string) {
 	var handlerIndex []int
 	for k, h := range handlers {
@@ -16,7 +16,7 @@ func (router *RawRouterStruct) HandlersToRouters(handlers []string) {
 		}
 	}
 
-	// handler name
+	// 获取 handler name
 	for i := 0; i < len(handlerIndex); i++ {
 		tmp := strings.Split(handlers[handlerIndex[i]], "@pmHandler")
 		if len(tmp) > 1 {
@@ -33,9 +33,12 @@ func (router *RawRouterStruct) HandlersToRouters(handlers []string) {
 				continue
 			}
 
+			// 匹配 handler name 和 router name
+			// 如果 handler name 不匹配则会在这里被丢弃
 			if router.RouterName == data["name"] {
 				if i > len(handlerIndex)-2 {
 					for _, handler := range handlers[handlerIndex[i]+1:] {
+						// 将参数传入对应的 RawRouterStruct 中
 						err = router.parseQueryBodyHeaders(handler)
 						if err != nil {
 							log.Println("warning: format error —— " + handler)
@@ -44,6 +47,7 @@ func (router *RawRouterStruct) HandlersToRouters(handlers []string) {
 					}
 				} else {
 					for _, handler := range handlers[handlerIndex[i]+1 : handlerIndex[i+1]] {
+						// 将参数传入对应的 RawRouterStruct 中
 						err = router.parseQueryBodyHeaders(handler)
 						if err != nil {
 							log.Println("warning: format error —— " + handler)
@@ -57,6 +61,7 @@ func (router *RawRouterStruct) HandlersToRouters(handlers []string) {
 	return
 }
 
+// parseQueryBodyHeaders 将参数传入对应的 RawRouterStruct 中
 func (router *RawRouterStruct) parseQueryBodyHeaders(handler string) error {
 	if strings.Contains(handler, "@pmQuery") {
 		tmpQuery := strings.Split(handler, "@pmQuery")

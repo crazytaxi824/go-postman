@@ -70,7 +70,7 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 									continue
 								}
 
-								// 判断router 是否存在，是否重名
+								// 判断router 是否存在，是否重名，去重用
 								if inSlice(router.RouterName, routerNameSlice) {
 									log.Println("warning: same name in multi Routers @pmRouter —— " + router.RouterName)
 									continue
@@ -82,7 +82,7 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 								routerNameSlice = append(routerNameSlice, router.RouterName)
 							}
 						} else if strings.Contains(trimBody, "@pmHandler") || strings.Contains(trimBody, "@pmQuery") || strings.Contains(trimBody, "@pmBody") || strings.Contains(trimBody, "@pmHeader") {
-							// 处理 pmHandler, pmQuery, pmBody, pmHeader
+							// 先缓存起来，稍后处理 pmHandler, pmQuery, pmBody, pmHeader
 							*rawHandlerSlice = append(*rawHandlerSlice, trimBody)
 						}
 					}
