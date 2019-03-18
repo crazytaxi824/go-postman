@@ -3,12 +3,6 @@
 分析源代码中的注释，解析成postman的json文件，方便导入postman。
 swagger风格。
 
-### 注释格式
-```go
-服务路径
-// @pmServer(path = "http://127.0.0.1:18080")
-```
-
 ### 事例
 
 服务路径
