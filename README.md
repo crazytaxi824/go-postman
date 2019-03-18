@@ -46,13 +46,18 @@ swagger风格。
 // @pmBody(key="author",desc="图片",type="file",src="/eee.png")
 ```
 -----------
-事例
+
+### 事例
+
+服务路径
 ```go
 func server(){
   // @pmServer(path = "http://127.0.0.1:18080")
   srv.ListenAndServe := ...
 }
-
+```
+路由
+```go
 func Router(){
   ...
   // @pmRouter(name="添加文章", method="Post", path="/article/add", group="文章")
@@ -63,6 +68,14 @@ func Router(){
   
   // @pmRouter(name= "文章列表",method= "Get",path= "/m/article/list",group= "文章")  
   article.Get("/list", articleAct.ListArticle)
+  ...
+}
+```
+控制器
+```go
+func handler(ctx *http.context) error {
+  ...
+  ctx.Query
   ...
 }
 ```
