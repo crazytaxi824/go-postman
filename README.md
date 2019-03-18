@@ -17,7 +17,7 @@ swagger风格。
 单独路由
 // @pmRouter(name= "首页",method= "Get",path= "/m/home")
 ```
-处理器
+处理器1
 ```go
 处理器，名字必须对应路由的名字，否则会被丢弃
 // @pmHandler(name= "文章列表")
@@ -26,7 +26,7 @@ swagger风格。
 // @pmQuery(key= "id",desc= "用户id")
 // @pmQuery(key="column",value= "id,name,age",desc= "需要的字段")
 ```
-处理器
+处理器2
 ```go
 处理器，名字必须对应路由的名字，否则会被丢弃
 // @pmHandler(name="编辑文章")
@@ -35,7 +35,7 @@ swagger风格。
 // @pmBody(key="content",desc="文章内容")
 // @pmBody(key="author",desc="作者")
 ```
-处理器
+处理器3
 ```go
 处理器，名字必须对应路由的名字，否则会被丢弃
 // @pmHandler(name="添加文章")
@@ -45,3 +45,26 @@ swagger风格。
 // @pmBody(key="author",desc="作者")
 // @pmBody(key="author",desc="图片",type="file",src="/eee.png")
 ```
+-----------
+事例
+```go
+func server(){
+  // @pmServer(path = "http://127.0.0.1:18080")
+  srv.ListenAndServe := ...
+}
+
+func Router(){
+  ...
+  // @pmRouter(name="添加文章", method="Post", path="/article/add", group="文章")
+  article.Get("/add", articleAct.AddArticle)
+  
+  // @pmRouter(name= "编辑文章",method= "Post",path= "/m/article/edit",group= "文章")
+  article.Get("/edit", articleAct.EditArticle)
+  
+  // @pmRouter(name= "文章列表",method= "Get",path= "/m/article/list",group= "文章")  
+  article.Get("/list", articleAct.ListArticle)
+  ...
+}
+```
+
+
