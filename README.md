@@ -33,10 +33,12 @@ func Router(){
 控制器
 handler
 
-处理器名称必须和路由对应，否则会被抛弃
+处理器名称必须和路由对应，否则会被抛弃.
+
 ApiHandler name has to be contained by ApiRouter name, otherwise it will be abandoned.
 
-ApiBody 中的类型(type)被默认定义为 text, 你可以定义成 file 类型。
+ApiBody 中的类型(type)被默认定义为 text, 你可以定义成 file 类型.
+
 ApiBody type (default - text) if you don't define it, OR you could define it as 'file'.
 
 ```go
