@@ -55,7 +55,7 @@ func EditHandler(w http.ResponseWriter, req *http.Request) {
   // @pmBody(key="content",desc="文章内容")
   articleContent := req.PostFormValue("content")
   
-  // @pmBody(key="author",desc="作者")
+  // @pmBody(key="author", value="xxx", desc="作者")
   articleAuthor := req.PostFormValue("author")
   
   // @pmBody(key="author",desc="图片",type="file",src="/eee.png")
