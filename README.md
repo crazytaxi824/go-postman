@@ -29,7 +29,8 @@ func Router(){
 ```
 控制器
 ```go
-// @pmRouter(name= "文章列表",method= "Get",path= "/m/article/list",group= "文章")  
+// 处理器名称必须和路由对应，否则会被抛弃
+// @pmHandler(name= "文章列表")
 func ListHandler(w http.ResponseWriter, req *http.Request) {
   ...
   // @pmQuery(key= "classID", value="123", desc= "文章类型id")
