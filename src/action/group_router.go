@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-// GroupRouters 将 router 分组
+// GroupRouters 将 router 按照 gourp name 分组，否则不会被放到文件夹中
 func GroupRouters(routers []RawRouterStruct) map[string][]RawRouterStruct {
 	group := make(map[string][]RawRouterStruct)
 

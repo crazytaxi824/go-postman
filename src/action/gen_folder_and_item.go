@@ -2,7 +2,7 @@ package action
 
 import "model"
 
-// GenFolderAndItemStruct 生成folder和items
+// GenFolderAndItemStruct 生成 folder 和 items 给 postman 用
 func GenFolderAndItemStruct(groups map[string][]RawRouterStruct) (folders []model.FolderStruct, items []model.RouterStruct) {
 	for folderName := range groups {
 

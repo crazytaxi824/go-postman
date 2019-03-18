@@ -34,10 +34,10 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 				trimBody := string(bytes.TrimSpace(v))
 				if len(trimBody) > 4 {
 					if trimBody[:2] == "//" {
-						if strings.Contains(trimBody, "@pmServer") {
+						if strings.Contains(trimBody, "@ApiServer") {
 
 							// 处理 serverPath
-							tmp := strings.Split(trimBody, "@pmServer")
+							tmp := strings.Split(trimBody, "@ApiServer")
 
 							if len(tmp) > 1 {
 								ref, err := ParsePMstructToJSONformat(strings.TrimSpace(tmp[1]))
@@ -54,9 +54,9 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 								}
 								*serverPath = data["path"]
 							}
-						} else if strings.Contains(trimBody, "@pmRouter") {
+						} else if strings.Contains(trimBody, "@ApiRouter") {
 							// 处理 router
-							tmp := strings.Split(trimBody, "@pmRouter")
+							tmp := strings.Split(trimBody, "@ApiRouter")
 							if len(tmp) > 1 {
 								ref, err := ParsePMstructToJSONformat(strings.TrimSpace(tmp[1]))
 								if err != nil {
@@ -70,9 +70,9 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 									continue
 								}
 
-								// 判断router 是否存在，是否重名
+								// 判断router 是否存在，是否重名，去重用
 								if inSlice(router.RouterName, routerNameSlice) {
-									log.Println("warning: same name in multi Routers @pmRouter —— " + router.RouterName)
+									log.Println("warning: same name in multi Routers @ApiRouter —— " + router.RouterName)
 									continue
 								}
 
@@ -81,8 +81,8 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 								*routers = append(*routers, router)
 								routerNameSlice = append(routerNameSlice, router.RouterName)
 							}
-						} else if strings.Contains(trimBody, "@pmHandler") || strings.Contains(trimBody, "@pmQuery") || strings.Contains(trimBody, "@pmBody") || strings.Contains(trimBody, "@pmHeader") {
-							// 处理 pmHandler, pmQuery, pmBody, pmHeader
+						} else if strings.Contains(trimBody, "@ApiHandler") || strings.Contains(trimBody, "@ApiQuery") || strings.Contains(trimBody, "@ApiBody") || strings.Contains(trimBody, "@ApiHeader") {
+							// 先缓存起来，稍后处理 ApiHandler, ApiQuery, ApiBody, ApiHeader
 							*rawHandlerSlice = append(*rawHandlerSlice, trimBody)
 						}
 					}

@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// GenHeaderAndURLStruct 生成url和header
+// GenHeaderAndURLStruct 生成 url 和 header
 func (router *RawRouterStruct) GenHeaderAndURLStruct(serverPath string) (err error) {
 	err = router.rawURLtoRequestURL(serverPath + router.RouterPath)
 	if err != nil {

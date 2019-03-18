@@ -9,6 +9,7 @@ import (
 // JSON JSON
 var JSON = jsoniter.ConfigCompatibleWithStandardLibrary
 
+// routerNameSlice 去重用，router name 不能重复，否则只会留下第一个
 var routerNameSlice []string
 
 // RawRouterStruct RawRouterStruct
