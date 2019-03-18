@@ -1,9 +1,8 @@
 ## go-postman
 
-分析源代码中的注释，解析成postman的json文件，方便导入postman。
+分析源代码中的注释，解析成postman的json文件，方便导入postman。swagger风格。
 
-Parse comments from source code, and reformat into PostMan json file.
-swagger风格。
+Parse comments from source code, and reformat into PostMan json file. swagger style.
 
 ### 事例 example
 
