@@ -75,4 +75,17 @@ func AddHandler(w http.ResponseWriter, req *http.Request) {
 
 ```
 
+命令行工具
+```bash
+$ gpm
+```
+参数
+```bash
+  -i string
+    	不读取指定文件夹名称下的所有文件, 用 | 分隔多个文件夹 (default "vendor")
+  -o string
+    	输出json文件的路径和名称 (default "./newPostman.json")
+  -p string
+    	指定项目路径，默认从src文件夹下开始读取 (default "./src")
+```
 
