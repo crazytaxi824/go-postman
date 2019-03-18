@@ -16,13 +16,13 @@ func server(){
 ```go
 func Router(){
   ...
-  // @ApiRouter(name="添加文章", method="Post", path="/article/add", group="文章")
+  // @ApiRouter(name="添加文章", method="POST", path="/article/add", group="文章")
   article.Get("/add", articleAct.AddArticle)
   
-  // @ApiRouter(name= "编辑文章",method= "Post",path= "/m/article/edit",group= "文章")
+  // @ApiRouter(name= "编辑文章",method= "POST",path= "/m/article/edit",group= "文章")
   article.Get("/edit", articleAct.EditArticle)
   
-  // @ApiRouter(name= "文章列表",method= "Get",path= "/m/article/list",group= "文章")  
+  // @ApiRouter(name= "文章列表",method= "GET",path= "/m/article/list",group= "文章")  
   article.Get("/list", articleAct.ListArticle)
   ...
 }
