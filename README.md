@@ -8,6 +8,7 @@ swagger风格。
 服务路径
 // @pmServer(path = "http://127.0.0.1:18080")
 ```
+路由
 ```go
 路由组
 // @pmRouter(name="添加文章", method="Post", path="/m/article/add", group="文章")
@@ -16,6 +17,7 @@ swagger风格。
 单独路由
 // @pmRouter(name= "首页",method= "Get",path= "/m/home")
 ```
+处理器
 ```go
 处理器，名字必须对应路由的名字，否则会被丢弃
 // @pmHandler(name= "文章列表")
@@ -24,6 +26,7 @@ swagger风格。
 // @pmQuery(key= "id",desc= "用户id")
 // @pmQuery(key="column",value= "id,name,age",desc= "需要的字段")
 ```
+处理器
 ```go
 处理器，名字必须对应路由的名字，否则会被丢弃
 // @pmHandler(name="编辑文章")
@@ -32,6 +35,7 @@ swagger风格。
 // @pmBody(key="content",desc="文章内容")
 // @pmBody(key="author",desc="作者")
 ```
+处理器
 ```go
 处理器，名字必须对应路由的名字，否则会被丢弃
 // @pmHandler(name="添加文章")
