@@ -37,10 +37,11 @@ handler
 处理器名称必须和路由对应，否则会被抛弃
 ApiHandler name has to be contained by ApiRouter name, otherwise it will be abandoned.
 
-ApiBody 中的类型(type)被默认定义为 text, 你可以手动定义成 file 类型。
-ApiBody type (default - text) if you don't define it, OR you could define it to 'file'.
-```bash
-@ApiBody(key="author",desc="article picture",type="file",src="/eee.png")
+ApiBody 中的类型(type)被默认定义为 text, 你可以定义成 file 类型。
+ApiBody type (default - text) if you don't define it, OR you could define it as 'file'.
+
+```go
+// @ApiBody(key="pic",desc="article picture",type="file",src="/eee.png")
 ```
 
 ```go
@@ -67,7 +68,7 @@ func EditHandler(w http.ResponseWriter, req *http.Request) {
   // @ApiBody(key="author", value="xxx", desc="author")
   articleAuthor := req.PostFormValue("author")
   
-  // @ApiBody(key="author",desc="article picture",type="file",src="/eee.png")
+  // @ApiBody(key="pic",desc="article picture",type="file",src="/eee.png")
   ...
 }
 
