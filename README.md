@@ -39,9 +39,11 @@ ApiHandler name has to be contained by ApiRouter name, otherwise it will be aban
 
 ApiBody 中的类型(type)被默认定义为 text, 你可以定义成 file 类型.
 
-ApiBody type (default - text) if you don't define it, OR you could define it as 'file'.
+ApiBody type="text" (default - text), if you don't define it, OR you could define it as 'file'.
 
 ```go
+// @ApiBody(key="title", value="today news", desc="article title")
+
 // @ApiBody(key="pic",desc="article picture",type="file",src="/eee.png")
 ```
 
