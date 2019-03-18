@@ -38,7 +38,8 @@ func ListHandler(w http.ResponseWriter, req *http.Request) {
   ...
 }
 
-// @pmRouter(name= "编辑文章",method= "Post",path= "/m/article/edit",group= "文章")
+// 处理器名称必须和路由对应，否则会被抛弃
+// @pmHandler(name= "编辑文章")
 func EditHandler(w http.ResponseWriter, req *http.Request) {
   ...
   // @pmQuery(key= "id", value="123", desc= "文章id")
@@ -57,7 +58,8 @@ func EditHandler(w http.ResponseWriter, req *http.Request) {
   ...
 }
 
-// @pmRouter(name="添加文章", method="Post", path="/article/add", group="文章")
+// 处理器名称必须和路由对应，否则会被抛弃
+// @pmHandler(name= "添加文章")
 func AddHandler(w http.ResponseWriter, req *http.Request) {
   ...
   // @pmHeader(key="Content-Type",value="application/x-www-form-urlencoded",desc="header描述")
