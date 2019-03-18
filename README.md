@@ -8,44 +8,6 @@ swagger风格。
 服务路径
 // @pmServer(path = "http://127.0.0.1:18080")
 ```
-路由
-```go
-路由组
-// @pmRouter(name="添加文章", method="Post", path="/m/article/add", group="文章")
-// @pmRouter(name= "编辑文章",method= "Post",path= "/m/article/edit",group= "文章")
-// @pmRouter(name= "文章列表",method= "Get",path= "/m/article/list",group= "文章")
-单独路由
-// @pmRouter(name= "首页",method= "Get",path= "/m/home")
-```
-处理器1
-```go
-处理器，名字必须对应路由的名字，否则会被丢弃
-// @pmHandler(name= "文章列表")
-处理器中的参数
-// @pmHeader(key="header",value="value",desc="header描述")
-// @pmQuery(key= "id",desc= "用户id")
-// @pmQuery(key="column",value= "id,name,age",desc= "需要的字段")
-```
-处理器2
-```go
-处理器，名字必须对应路由的名字，否则会被丢弃
-// @pmHandler(name="编辑文章")
-处理器中的参数
-// @pmBody(key="title",desc="文章标题")
-// @pmBody(key="content",desc="文章内容")
-// @pmBody(key="author",desc="作者")
-```
-处理器3
-```go
-处理器，名字必须对应路由的名字，否则会被丢弃
-// @pmHandler(name="添加文章")
-处理器中的参数
-// @pmBody(key="title",desc="文章标题")
-// @pmBody(key="content",desc="文章内容")
-// @pmBody(key="author",desc="作者")
-// @pmBody(key="author",desc="图片",type="file",src="/eee.png")
-```
------------
 
 ### 事例
 
@@ -73,11 +35,47 @@ func Router(){
 ```
 控制器
 ```go
-func handler(ctx *http.context) error {
+// @pmRouter(name= "文章列表",method= "Get",path= "/m/article/list",group= "文章")  
+func ListHandler(w http.ResponseWriter, req *http.Request) {
   ...
-  ctx.Query
+  // @pmQuery(key= "classID", value="123", desc= "文章类型id")
+  cID := req.URL.Query().Get("classID")
   ...
 }
+
+// @pmRouter(name= "编辑文章",method= "Post",path= "/m/article/edit",group= "文章")
+func EditHandler(w http.ResponseWriter, req *http.Request) {
+  ...
+  // @pmQuery(key= "id", value="123", desc= "文章id")
+  ArticleID := req.URL.Query().Get("id")
+  
+  // @pmBody(key="title",desc="文章标题")
+  articleTitle := req.PostFormValue("title")
+  
+  // @pmBody(key="content",desc="文章内容")
+  articleContent := req.PostFormValue("content")
+  
+  // @pmBody(key="author",desc="作者")
+  articleAuthor := req.PostFormValue("author")
+  
+  // @pmBody(key="author",desc="图片",type="file",src="/eee.png")
+  ...
+}
+
+// @pmRouter(name="添加文章", method="Post", path="/article/add", group="文章")
+func AddHandler(w http.ResponseWriter, req *http.Request) {
+  ...
+  // @pmHeader(key="Content-Type",value="application/x-www-form-urlencoded",desc="header描述")
+  // @pmHeader(key="Content-Type",value="application/json",desc="header描述")
+  
+  // @pmQuery(key= "classID", value="123", desc= "文章类型id")
+  
+  // @pmBody(key="title",desc="文章标题")
+  // @pmBody(key="content",desc="文章内容")
+  // @pmBody(key="author",desc="作者")
+  ...
+}
+
 ```
 
 
