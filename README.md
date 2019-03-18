@@ -6,16 +6,17 @@ Parse comments from source code, and reformat into PostMan json file. swagger st
 
 ### 事例 example
 
-服务路径
-server path
+#### 服务路径 server path
+
 ```go
 func server(){
   // @ApiServer(path = "http://127.0.0.1:18080")
   srv.ListenAndServe := ...
 }
 ```
-路由
-router
+
+#### 路由 router
+
 ```go
 func Router(){
   ...
@@ -30,8 +31,8 @@ func Router(){
   ...
 }
 ```
-控制器
-handler
+
+#### 控制器 handler
 
 处理器名称必须和路由对应，否则会被抛弃.
 
@@ -92,7 +93,8 @@ func AddHandler(w http.ResponseWriter, req *http.Request) {
 ```
 -----
 
-### 命令行工具
+### 命令行工具 command tool
+
 ```bash
 $ gpm
 ```
