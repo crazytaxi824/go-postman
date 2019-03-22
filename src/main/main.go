@@ -22,6 +22,7 @@ func main() {
 	rootPath := flag.String("p", "./src", "read all files from this path, including sub folders")
 	ignoreFile := flag.String("i", "vendor", "folder names, ignore multi folders, using | to split")
 	outputPath := flag.String("o", "./newPostman.json", "output file name")
+	specify := flag.String("s", "", "specify file suffix, eg: .go")
 	flag.Parse()
 
 	// rootPath := "./src"
@@ -34,7 +35,7 @@ func main() {
 	var serverPath string
 	var routers []action.RawRouterStruct
 	var rawHandlerSlice []string
-	err = action.ReadAllFiles(*rootPath, &serverPath, ignoreFiles, &routers, &rawHandlerSlice)
+	err = action.ReadAllFiles(*rootPath, &serverPath, ignoreFiles, &routers, &rawHandlerSlice, *specify)
 	if err != nil {
 		log.Println(err.Error())
 		return
@@ -56,6 +57,11 @@ func main() {
 
 	// 给路由分组 -----------------------------------------------------------
 	groups := action.GroupRouters(routers)
+
+	if len(groups) == 0 {
+		log.Println("no @Api detected!")
+		return
+	}
 
 	// 生成 body ------------------------------------------------------------
 	action.GenGroupBody(&groups)

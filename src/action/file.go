@@ -5,11 +5,12 @@ import (
 	"errors"
 	"io/ioutil"
 	"log"
+	"path"
 	"strings"
 )
 
 // ReadAllFiles 读取所有数据
-func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, routers *[]RawRouterStruct, rawHandlerSlice *[]string) error {
+func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, routers *[]RawRouterStruct, rawHandlerSlice *[]string, fileSuffix string) error {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Println("ReadAllFiles")
@@ -25,9 +26,15 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 	for _, file := range files {
 		if file.IsDir() {
 			if !inSlice(file.Name(), ignoreFolders) {
-				ReadAllFiles(rootPath+"/"+file.Name(), serverPath, ignoreFolders, routers, rawHandlerSlice)
+				ReadAllFiles(rootPath+"/"+file.Name(), serverPath, ignoreFolders, routers, rawHandlerSlice, fileSuffix)
 			}
 		} else {
+			if fileSuffix != "" {
+				if path.Ext(file.Name()) != fileSuffix {
+					continue
+				}
+			}
+
 			body, err := ioutil.ReadFile(rootPath + "/" + file.Name())
 			if err != nil {
 				return err
