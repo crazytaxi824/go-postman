@@ -17,7 +17,11 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 		}
 	}()
 
-	files, _ := ioutil.ReadDir(rootPath)
+	files, err := ioutil.ReadDir(rootPath)
+	if err != nil {
+		return err
+	}
+
 	for _, file := range files {
 		if file.IsDir() {
 			if !inSlice(file.Name(), ignoreFolders) {
@@ -73,14 +77,20 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 
 								// 判断router 是否存在，是否重名，去重用
 								if inSlice(router.RouterName, routerNameSlice) {
-									log.Println("warning: same name in multi Routers @ApiRouter —— " + router.RouterName)
+									log.Println("warning: same NAME in multi Routers @ApiRouter —— " + router.RouterName)
+									continue
+								}
+
+								if inSlice(router.RouterPath, routerPathSlice) {
+									log.Println("warning: same PATH in multi Routers @ApiRouter —— " + router.RouterName)
 									continue
 								}
 
 								router.Method = strings.ToUpper(router.Method)
-
 								*routers = append(*routers, router)
+
 								routerNameSlice = append(routerNameSlice, router.RouterName)
+								routerPathSlice = append(routerPathSlice, router.RouterPath)
 							}
 						} else if strings.Contains(trimBody, "@ApiHandler") || strings.Contains(trimBody, "@ApiQuery") || strings.Contains(trimBody, "@ApiBody") || strings.Contains(trimBody, "@ApiHeader") {
 							// 先缓存起来，稍后处理 ApiHandler, ApiQuery, ApiBody, ApiHeader
