@@ -32,12 +32,12 @@ func main() {
 		ignoreFiles[k] = strings.TrimSpace(ignoreFiles[k])
 	}
 
-	// err = action.ReformFile(*rootPath, ignoreFiles)
-	// if err != nil {
-	// 	log.Println(err.Error())
-	// 	return
-	// }
-	// return
+	err = action.ReformFile(*rootPath, ignoreFiles)
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	return
 
 	// 读取文件夹下所有go文件 -----------------------------------------------------
 	var serverPath string
