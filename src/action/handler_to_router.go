@@ -42,6 +42,7 @@ func (router *RawRouterStruct) HandlersToRouters(handlers []string) {
 						err = router.parseQueryBodyHeaders(handler)
 						if err != nil {
 							log.Println("warning: format error —— " + handler)
+							log.Println(err.Error())
 							continue
 						}
 					}
@@ -51,6 +52,7 @@ func (router *RawRouterStruct) HandlersToRouters(handlers []string) {
 						err = router.parseQueryBodyHeaders(handler)
 						if err != nil {
 							log.Println("warning: format error —— " + handler)
+							log.Println(err.Error())
 							continue
 						}
 					}
@@ -82,6 +84,14 @@ func (router *RawRouterStruct) parseQueryBodyHeaders(handler string) error {
 			query.Key = dataQuery["key"]
 			query.Value = dataQuery["value"]
 			query.Description = dataQuery["desc"]
+
+			// 检查key是否重复
+			for _, v := range router.Querys {
+				if v.Key == query.Key {
+					return errors.New("duplicate QUERY key —— router: " + router.RouterName + ", key: " + v.Key)
+				}
+			}
+
 			router.Querys = append(router.Querys, query)
 		}
 	} else if strings.Contains(handler, "@ApiBody") {
@@ -104,6 +114,19 @@ func (router *RawRouterStruct) parseQueryBodyHeaders(handler string) error {
 				file.Src = dataBody["src"]
 				file.Description = dataBody["desc"]
 				file.Type = "file"
+
+				for _, v := range router.Files {
+					if v.Key == file.Key {
+						return errors.New("duplicate BODY key —— router: " + router.RouterName + ", key: " + v.Key)
+					}
+				}
+
+				for _, v := range router.Texts {
+					if v.Key == file.Key {
+						return errors.New("duplicate BODY key —— router: " + router.RouterName + ", key: " + v.Key)
+					}
+				}
+
 				router.Files = append(router.Files, file)
 
 			} else {
@@ -112,6 +135,19 @@ func (router *RawRouterStruct) parseQueryBodyHeaders(handler string) error {
 				text.Value = dataBody["value"]
 				text.Description = dataBody["desc"]
 				text.Type = "text"
+
+				for _, v := range router.Files {
+					if v.Key == text.Key {
+						return errors.New("duplicate BODY key —— router: " + router.RouterName + ", key: " + v.Key)
+					}
+				}
+
+				for _, v := range router.Texts {
+					if v.Key == text.Key {
+						return errors.New("duplicate BODY key —— router: " + router.RouterName + ", key: " + v.Key)
+					}
+				}
+
 				router.Texts = append(router.Texts, text)
 			}
 		}
@@ -136,6 +172,14 @@ func (router *RawRouterStruct) parseQueryBodyHeaders(handler string) error {
 			header.Type = "text"
 			header.Description = dataHeader["desc"]
 			header.Value = dataHeader["value"]
+
+			// 检查key是否重复
+			for _, v := range router.Headers {
+				if v.Key == header.Key {
+					return errors.New("duplicate HEADER key —— router: " + router.RouterName + ", key: " + v.Key)
+				}
+			}
+
 			router.Headers = append(router.Headers, header)
 		}
 	}

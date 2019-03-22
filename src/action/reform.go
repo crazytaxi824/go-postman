@@ -2,8 +2,28 @@ package action
 
 import (
 	"bytes"
+	"errors"
 	"io/ioutil"
 )
+
+// FindRouters 查找路由用
+type FindRouters struct {
+	RootRouter   bool
+	ParentName   string
+	VariableName string
+	Path         string
+	Handlers     []FindHandlers
+	SubRouter    []FindRouters
+}
+
+// FindHandlers 查找控制器函数
+type FindHandlers struct {
+	HandlerPackageName string
+	HandlerName        string
+}
+
+// RouterGroups 路由组 缓存
+var RouterGroups []FindRouters
 
 // ReformFile 逐行遍历，添加 Api 文件
 func ReformFile(rootPath string, ignoreFolders []string) error {
@@ -84,5 +104,53 @@ func appendAPIs(finalFile *[][]byte, src []byte, mark *bool) {
 
 		*finalFile = append(*finalFile, body)
 		*mark = true
+	} else if bytes.Contains(src, []byte(".Router.GROUP(\"")) && !bytes.Contains(src, []byte("//")) {
+		// 获取 变量名
+		variableSlice := bytes.SplitN(src, []byte(":="), 2)
+		if len(variableSlice) != 2 {
+			return
+		}
+		variable := bytes.TrimSpace(variableSlice[0])
+
+		pathRaw := variableSlice[1]
+		i := bytes.Index(pathRaw, []byte("\""))
+		pathRaw = bytes.Replace(pathRaw, []byte("\""), []byte("|"), 1)
+		f := bytes.Index(pathRaw, []byte("\""))
+
+		var rootRouter FindRouters
+		rootRouter.VariableName = string(variable)
+		rootRouter.Path = string(pathRaw[i+1 : f])
+		rootRouter.RootRouter = true
+
+	} else if bytes.Contains(src, []byte(".GROUP(\"")) && !bytes.Contains(src, []byte("//")) {
+
+	} else if bytes.Contains(src, []byte(".GET(\"")) && !bytes.Contains(src, []byte("//")) {
+
+	} else if bytes.Contains(src, []byte(".POST(\"")) && !bytes.Contains(src, []byte("//")) {
+
 	}
+}
+
+func parseRouterProperties(src []byte, isRootRouter bool) (FindRouters, error) {
+	variableSlice := bytes.SplitN(src, []byte(":="), 2)
+	if len(variableSlice) != 2 {
+		return FindRouters{}, errors.New("wrong format")
+	}
+	variable := bytes.TrimSpace(variableSlice[0])
+
+	pathRaw := variableSlice[1]
+	i := bytes.Index(pathRaw, []byte("\""))
+	pathRaw = bytes.Replace(pathRaw, []byte("\""), []byte("|"), 1)
+	f := bytes.Index(pathRaw, []byte("\""))
+
+	var rootRouter FindRouters
+	rootRouter.VariableName = string(variable)
+	rootRouter.Path = string(pathRaw[i+1 : f])
+	rootRouter.RootRouter = isRootRouter
+
+	// 路由函数
+	// TODO
+	// handlerSlice := bytes.Split(variableSlice[1], []byte(","))
+
+	return FindRouters{}, nil
 }

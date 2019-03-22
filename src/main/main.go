@@ -25,10 +25,19 @@ func main() {
 	specify := flag.String("s", "", "specify file suffix, eg: .go")
 	flag.Parse()
 
+	*ignoreFile = "vendor|action|model|main"
+
 	ignoreFiles := strings.Split(*ignoreFile, "|")
 	for k := range ignoreFiles {
 		ignoreFiles[k] = strings.TrimSpace(ignoreFiles[k])
 	}
+
+	// err = action.ReformFile(*rootPath, ignoreFiles)
+	// if err != nil {
+	// 	log.Println(err.Error())
+	// 	return
+	// }
+	// return
 
 	// 读取文件夹下所有go文件 -----------------------------------------------------
 	var serverPath string
