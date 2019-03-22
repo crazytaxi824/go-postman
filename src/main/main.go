@@ -25,7 +25,6 @@ func main() {
 	specify := flag.String("s", "", "specify file suffix, eg: .go")
 	flag.Parse()
 
-	// rootPath := "./src"
 	ignoreFiles := strings.Split(*ignoreFile, "|")
 	for k := range ignoreFiles {
 		ignoreFiles[k] = strings.TrimSpace(ignoreFiles[k])
