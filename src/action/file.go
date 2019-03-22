@@ -77,12 +77,12 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 
 								// 判断router 是否存在，是否重名，去重用
 								if inSlice(router.RouterName, routerNameSlice) {
-									log.Println("warning: same NAME in multi Routers @ApiRouter —— " + router.RouterName)
+									log.Println("warning: same NAME in multi Routers @ApiRouter —— name: \"" + router.RouterName + "\"")
 									continue
 								}
 
 								if inSlice(router.RouterPath, routerPathSlice) {
-									log.Println("warning: same PATH in multi Routers @ApiRouter —— " + router.RouterName)
+									log.Println("warning: same PATH in multi Routers @ApiRouter —— path: \"" + router.RouterPath + "\"")
 									continue
 								}
 
