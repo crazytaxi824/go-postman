@@ -3,7 +3,6 @@ package action
 import (
 	"errors"
 	"io/ioutil"
-	"path"
 	"strings"
 )
 
@@ -77,7 +76,6 @@ func ReformFile(rootPath string, ignoreFolders []string) error {
 			// 写文件
 			if mark {
 				fileContent := strings.Join(finalFile, "\n")
-				// log.Println(fileContent)
 
 				// 写文件
 				err = WriteFiles(filePath, []byte(fileContent))
@@ -87,11 +85,11 @@ func ReformFile(rootPath string, ignoreFolders []string) error {
 			}
 		}
 	}
-	// log.Println("--------------------------------")
 
 	// for _, v := range rootRouterGroups {
 	// 	log.Println(v)
 	// }
+
 	return nil
 }
 
@@ -123,9 +121,10 @@ func appendAPIs(finalFile *[]string, src string, mark *bool) (err error) {
 			return err
 		}
 
-		*finalFile = append(*finalFile, r)
-		*mark = true
-
+		if r != "" {
+			*finalFile = append(*finalFile, r)
+			*mark = true
+		}
 	} else if !strings.Contains(src, "//") {
 		var router FindRouters
 		if !router.getRouterMethod(src) {
@@ -137,23 +136,19 @@ func appendAPIs(finalFile *[]string, src string, mark *bool) (err error) {
 			return err
 		}
 
-		*finalFile = append(*finalFile, r)
-		*mark = true
+		if r != "" {
+			*finalFile = append(*finalFile, r)
+			*mark = true
+		}
 	}
 	return nil
 }
-
-// func (router *FindRouters) parseRouerProperties(src string) (apiStr string, err error) {
-// 	router.genRouterAPI(src string)
-// }
 
 func parseRouterGroupProperties(src string) (apiStr string, err error) {
 	var router FindRouters
 	// var router FindRouters
 	// 判断 :=
 	if strings.Contains(src, ":=") {
-		// b:=Dispatcher.Router | ("/author") | ("/books", action.ManagerMidwareHandler)
-
 		// 获取 variableName
 		variableSlice := strings.SplitN(src, ":=", 2)
 		router.VariableName = strings.TrimSpace(variableSlice[0])
@@ -166,9 +161,6 @@ func parseRouterGroupProperties(src string) (apiStr string, err error) {
 
 		routerGroups[router.VariableName] = router
 	} else {
-		// Dispatcher.Router.GROUP("/author").GROUP("/books", action.ManagerMidwareHandler).GET("/list", action.UserMidwareHandler)
-		// add.Router.GROUP("/author").GROUP("/books", action.ManagerMidwareHandler).GET("/list", action.UserMidwareHandler)
-		// game.GROUP("/author").GROUP("/books", action.ManagerMidwareHandler).GET("/list", action.UserMidwareHandler)
 		b := router.getRouterMethod(src)
 		if !b {
 			return "", errors.New("format error")
@@ -202,7 +194,17 @@ func (router *FindRouters) genRouterAPI(src string) (string, error) {
 		// 添加到 rootRouterGroups
 		rootRouterGroups = append(rootRouterGroups, *router)
 
-		routerName := path.Base(router.Path) + " " + router.ParentName
+		routerNameSlice := strings.Split(router.Path, "/")
+		var routerName string
+		lenName := len(routerNameSlice)
+		if lenName < 1 {
+			return "", errors.New("no path")
+		} else if lenName < 2 {
+			routerName = routerNameSlice[0]
+		} else {
+			routerName = strings.TrimSpace(strings.Join(routerNameSlice[lenName-2:], " "))
+		}
+
 		apiStr := "// @ApiRouter(name=\"" + routerName + "\", method=\"" + router.Method + "\", path=\"" + router.Path + "\", group=\"" + router.ParentName + "\")"
 
 		return apiStr, nil
@@ -234,7 +236,16 @@ func (router *FindRouters) genRouterAPI(src string) (string, error) {
 	// 添加到 rootRouterGroups
 	rootRouterGroups = append(rootRouterGroups, *router)
 
-	routerName := path.Base(router.Path) + " " + group.ParentName
+	routerNameSlice := strings.Split(router.Path, "/")
+	var routerName string
+	lenName := len(routerNameSlice)
+	if lenName < 1 {
+		return "", errors.New("no path")
+	} else if lenName < 2 {
+		routerName = routerNameSlice[0]
+	} else {
+		routerName = strings.TrimSpace(strings.Join(routerNameSlice[lenName-2:], " "))
+	}
 	apiStr := "// @ApiRouter(name=\"" + routerName + "\", method=\"" + router.Method + "\", path=\"" + router.Path + "\", group=\"" + group.ParentName + "\")"
 
 	return apiStr, nil
@@ -259,7 +270,7 @@ func (router *FindRouters) getGroupParentName(srcWithourVariableName string) {
 }
 
 func (router *FindRouters) getRouterParentName(srcWithourVariableName string) {
-	if strings.Contains(srcWithourVariableName, ".Router.GROUP(\"") {
+	if strings.Contains(srcWithourVariableName, ".Router."+router.Method+"(\"") {
 		return
 	}
 
