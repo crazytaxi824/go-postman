@@ -3,6 +3,7 @@ package action
 import (
 	"errors"
 	"io/ioutil"
+	"log"
 	"strings"
 )
 
@@ -36,6 +37,7 @@ func ReformFile(rootPath string, ignoreFolders []string) error {
 		return err
 	}
 
+	var fileName string
 	for _, file := range files {
 		if file.IsDir() {
 			if !inSlice(file.Name(), ignoreFolders) {
@@ -55,19 +57,45 @@ func ReformFile(rootPath string, ignoreFolders []string) error {
 			bodySlice := strings.Split(string(body), "\n")
 
 			for k, str := range bodySlice {
-				if k != 0 {
-					if !strings.Contains(bodySlice[k-1], "@Api") {
-						err = appendAPIs(&finalFile, str, &mark)
-						if err != nil {
-							continue
+				// if k != 0 {
+				// 	if !strings.Contains(bodySlice[k-1], "@Api") {
+				// 		err = appendAPIs(&finalFile, str, &mark)
+				// 		if err != nil {
+				// 			continue
+				// 		}
+				// 	}
+				// } else {
+				// 	err := appendAPIs(&finalFile, str, &mark)
+				// 	if err != nil {
+				// 		continue
+				// 	}
+				// }
+
+				apiStr, err := appendAPIsNew(str)
+				if err != nil {
+					finalFile = append(finalFile, str)
+					continue
+				}
+
+				if apiStr != "" {
+					if k > 0 {
+						if strings.Contains(bodySlice[k-1], "@Api") && strings.Contains(bodySlice[k-1], "//") && strings.TrimSpace(bodySlice[k-1]) != strings.TrimSpace(apiStr) {
+							finalFile = finalFile[:len(finalFile)-1]
+							finalFile = append(finalFile, apiStr)
+							fileName = file.Name()
+							mark = true
+						} else if strings.TrimSpace(bodySlice[k-1]) != strings.TrimSpace(apiStr) {
+							finalFile = append(finalFile, apiStr)
+							fileName = file.Name()
+							mark = true
 						}
-					}
-				} else {
-					err := appendAPIs(&finalFile, str, &mark)
-					if err != nil {
-						continue
+					} else {
+						finalFile = append(finalFile, apiStr)
+						fileName = file.Name()
+						mark = true
 					}
 				}
+
 				finalFile = append(finalFile, str)
 			}
 
@@ -75,6 +103,7 @@ func ReformFile(rootPath string, ignoreFolders []string) error {
 
 			// 写文件
 			if mark {
+				log.Println("file formated: " + rootPath + fileName)
 				fileContent := strings.Join(finalFile, "\n")
 
 				// 写文件
@@ -91,6 +120,52 @@ func ReformFile(rootPath string, ignoreFolders []string) error {
 	// }
 
 	return nil
+}
+
+func appendAPIsNew(src string) (apiStr string, err error) {
+	if strings.Contains(src, ".QueryValue(\"") && strings.Contains(src, "\")") && !strings.Contains(src, "//") {
+		i := strings.Index(src, ".QueryValue(\"")
+		f := strings.Index(src, "\")")
+		key := strings.TrimSpace(src[i+13 : f])
+
+		query := "// @ApiQuery(key=\"" + key + "\", desc= \"\", value=\"\")"
+
+		return query, nil
+
+	} else if strings.Contains(src, ".FormValue(\"") && strings.Contains(src, "\")") && !strings.Contains(src, "//") {
+		i := strings.Index(src, ".FormValue(\"")
+		f := strings.Index(src, "\")")
+		key := strings.TrimSpace(src[i+12 : f])
+
+		body := "// @ApiBody(key=\"" + key + "\", desc=\"\", value=\"\")"
+
+		return body, nil
+
+	} else if strings.Contains(src, ".GROUP(\"") && !strings.Contains(src, "//") {
+		r, err := parseRouterGroupProperties(src)
+		if err != nil {
+			return "", err
+		}
+
+		if r != "" {
+			return r, nil
+		}
+	} else if !strings.Contains(src, "//") {
+		var router FindRouters
+		if !router.getRouterMethod(src) {
+			return "", nil
+		}
+
+		r, err := router.genRouterAPI(src)
+		if err != nil {
+			return "", err
+		}
+
+		if r != "" {
+			return r, nil
+		}
+	}
+	return "", nil
 }
 
 // appendAPIs appendAPIs
@@ -323,6 +398,7 @@ func (router *FindRouters) getPathAndHandler(paramStr string) (err error) {
 	return nil
 }
 
+// 获取路由 请求方法
 func (router *FindRouters) getRouterMethod(src string) (mark bool) {
 	if strings.Contains(src, ".GET(") {
 		router.Method = "GET"
