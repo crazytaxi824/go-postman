@@ -27,6 +27,7 @@ func main() {
 	flag.Parse()
 
 	// *ignoreFile = "vendor|action|model|main"
+	// *specify = ".go"
 	// *format = true
 
 	ignoreFiles := strings.Split(*ignoreFile, "|")
@@ -46,8 +47,7 @@ func main() {
 	// 读取文件夹下所有go文件 -----------------------------------------------------
 	var serverPath string
 	var routers []action.RawRouterStruct
-	var rawHandlerSlice []string
-	err = action.ReadAllFiles(*rootPath, &serverPath, ignoreFiles, &routers, &rawHandlerSlice, *specify)
+	err = action.ReadAllFiles(*rootPath, &serverPath, ignoreFiles, &routers, *specify)
 	if err != nil {
 		log.Println(err.Error())
 		return
@@ -55,7 +55,7 @@ func main() {
 
 	// 把处理器中的所有参数传入路由 ------------------------------------------------
 	for k := range routers {
-		routers[k].HandlersToRouters(rawHandlerSlice)
+		routers[k].HandlersToRouters()
 	}
 
 	// 生成url，生成 header --------------------------------------------------

@@ -10,13 +10,15 @@ import (
 )
 
 // ReadAllFiles 读取所有数据
-func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, routers *[]RawRouterStruct, rawHandlerSlice *[]string, fileSuffix string) error {
+func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, routers *[]RawRouterStruct, fileSuffix string) error {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Println("ReadAllFiles")
 			log.Println(r)
 		}
 	}()
+
+	var rawHandlerSlice []string
 
 	files, err := ioutil.ReadDir(rootPath)
 	if err != nil {
@@ -26,7 +28,7 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 	for _, file := range files {
 		if file.IsDir() {
 			if !inSlice(file.Name(), ignoreFolders) {
-				ReadAllFiles(rootPath+"/"+file.Name(), serverPath, ignoreFolders, routers, rawHandlerSlice, fileSuffix)
+				ReadAllFiles(rootPath+"/"+file.Name(), serverPath, ignoreFolders, routers, fileSuffix)
 			}
 		} else {
 			if fileSuffix != "" {
@@ -94,6 +96,13 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 								}
 
 								router.Method = strings.ToUpper(router.Method)
+
+								// 生成 router.HandlersName
+								handlerSlice := strings.Split(router.RawHandlers, ",")
+								for _, v := range handlerSlice {
+									router.HandlersName = append(router.HandlersName, strings.TrimSpace(v))
+								}
+
 								*routers = append(*routers, router)
 
 								routerNameSlice = append(routerNameSlice, router.RouterName)
@@ -101,11 +110,13 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 							}
 						} else if strings.Contains(trimBody, "@ApiHandler") || strings.Contains(trimBody, "@ApiQuery") || strings.Contains(trimBody, "@ApiBody") || strings.Contains(trimBody, "@ApiHeader") {
 							// 先缓存起来，稍后处理 ApiHandler, ApiQuery, ApiBody, ApiHeader
-							*rawHandlerSlice = append(*rawHandlerSlice, trimBody)
+							rawHandlerSlice = append(rawHandlerSlice, trimBody)
 						}
 					}
 				}
 			}
+			// 分析 handler, body, query, header
+			SaveHandlers(rawHandlerSlice)
 		}
 	}
 	return nil
@@ -129,7 +140,7 @@ func inSlice(s string, ss []string) bool {
 	return false
 }
 
-// ParsePMstructToJSONformat ParsePMstructToJSONformat
+// ParsePMstructToJSONformat 将(key="id" ...) 转换为 json kv 格式{"key":"id"}
 func ParsePMstructToJSONformat(pmStruct string) (string, error) {
 	lenPM := len(pmStruct)
 	if lenPM < 2 {
@@ -144,7 +155,7 @@ func ParsePMstructToJSONformat(pmStruct string) (string, error) {
 	// pmSlice := strings.Split(pmStruct[1:lenPM-1], ",")
 	pmSlice := SplitStringsTOKV(pmStruct[1 : lenPM-1])
 	for _, v := range pmSlice {
-		f, err := parseKV(v)
+		f, err := formatAPIToJSONKV(v)
 		if err != nil {
 			log.Println("info: check format ——" + pmStruct)
 			continue
@@ -154,7 +165,7 @@ func ParsePMstructToJSONformat(pmStruct string) (string, error) {
 	return "{" + strings.Join(finalStruct, ",") + "}", nil
 }
 
-// SplitStringsTOKV SplitStringsTOKV
+// SplitStringsTOKV 将(key="id" ...) 拆分
 func SplitStringsTOKV(str string) []string {
 	// str = `key="note", value="", desc="备注", type="", src=""`
 	defer func() {
@@ -222,7 +233,8 @@ func SplitStringsTOKV(str string) []string {
 	return finalSlice
 }
 
-func parseKV(KVstr string) (string, error) {
+// 将api格式转换为 json kv 格式
+func formatAPIToJSONKV(KVstr string) (string, error) {
 	KVSlice := strings.SplitN(KVstr, "=", 2)
 	var jsonStr []string
 	if len(KVSlice) < 2 {
