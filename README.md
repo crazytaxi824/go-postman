@@ -17,16 +17,20 @@ func server(){
 
 #### 路由 router
 
+路由中的 handler 可以添加多个处理器，用","分隔
+
+"handlers" in @ApiRouter could be mutli handlers' names, using "," to seperate them.
+
 ```go
 func Router(){
   ...
-  // @ApiRouter(name="add article", method="POST", path="/article/add", group="article")
+  // @ApiRouter(name="add article", method="POST", path="/article/add", group="article", handlers="add article, mid")
   article.Get("/add", articleAct.AddArticle)
   
-  // @ApiRouter(name= "edit article",method= "POST",path= "/m/article/edit",group= "article")
+  // @ApiRouter(name="edit article",method="POST",path="/m/article/edit",group="article", handlers="edit article, mid")
   article.Get("/edit", articleAct.EditArticle)
   
-  // @ApiRouter(name= "list article",method= "GET",path= "/m/article/list",group= "article")  
+  // @ApiRouter(name="list article",method="GET",path="/m/article/list",group="article", handlers="list article, mid")  
   article.Get("/list", articleAct.ListArticle)
   ...
 }
@@ -34,13 +38,13 @@ func Router(){
 
 #### 控制器 handler
 
-处理器名称必须和路由对应，否则会被抛弃.
+处理器名称必须和路由(handler)对应，否则会被抛弃.
 
-ApiHandler name has to be contained by ApiRouter name, otherwise it will be abandoned.
+@ApiHandler "name" has to be contained by @ApiRouter "handlers", otherwise it will be abandoned.
 
 ApiBody 中的类型(type)被默认定义为 text, 你可以定义成 file 类型.
 
-ApiBody type="text" (default - text), if you don't define it, OR you could define it as 'file'.
+@ApiBody type="text" (default - text), if you don't define it, OR you could define it as 'file'.
 
 ```go
 // @ApiBody(key="title", value="today news", desc="article title")
@@ -49,18 +53,25 @@ ApiBody type="text" (default - text), if you don't define it, OR you could defin
 ```
 
 ```go
-// @ApiHandler(name= "list article")
+// @ApiHandler(name="mid")
+func MiddwareHandler(w http.ResponseWriter, req *http.Request) {
+  ...
+  // @ApiHeader(key="Content-Type",value="application/json",desc="header description")
+  ...
+}
+
+// @ApiHandler(name="list article")
 func ListHandler(w http.ResponseWriter, req *http.Request) {
   ...
-  // @ApiQuery(key= "classID", value="123", desc= "article class id")
+  // @ApiQuery(key="classID", value="123", desc= "article class id")
   cID := req.URL.Query().Get("classID")
   ...
 }
 
-// @ApiHandler(name= "edit article")
+// @ApiHandler(name="edit article")
 func EditHandler(w http.ResponseWriter, req *http.Request) {
   ...
-  // @ApiQuery(key= "id", value="123", desc= "article id")
+  // @ApiQuery(key="id", value="123", desc="article id")
   ArticleID := req.URL.Query().Get("id")
   
   // @ApiBody(key="title",desc="article title")
@@ -76,13 +87,13 @@ func EditHandler(w http.ResponseWriter, req *http.Request) {
   ...
 }
 
-// @ApiHandler(name= "add article")
+// @ApiHandler(name="add article")
 func AddHandler(w http.ResponseWriter, req *http.Request) {
   ...
   // @ApiHeader(key="Content-Type",value="application/x-www-form-urlencoded",desc="header description")
   // @ApiHeader(key="Content-Type",value="application/json",desc="header description")
   
-  // @ApiQuery(key= "classID", value="123", desc= "article class id")
+  // @ApiQuery(key="classID", value="123", desc="article class id")
   
   // @ApiBody(key="title",desc="article title")
   // @ApiBody(key="content",desc="article content")
@@ -106,5 +117,7 @@ $ gpm
     	输出json文件的路径和名称 (default "./newPostman.json")
   -p string
     	指定项目路径，默认从src文件夹下开始读取 (default "./src")
+  -s string
+      指定文件后缀名，只分析该后缀的文件，eg: ".go"
 ```
 

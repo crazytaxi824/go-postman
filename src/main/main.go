@@ -23,7 +23,7 @@ func main() {
 	ignoreFile := flag.String("i", "vendor", "folder names, ignore multi folders, using | to split")
 	outputPath := flag.String("o", "./newPostman.json", "output file name")
 	specify := flag.String("s", "", "specify file suffix, eg: .go")
-	format := flag.Bool("format", false, "write API to your files")
+	format := flag.Bool("format", false, "write API to your files, package HttpDispatch only")
 	flag.Parse()
 
 	// *ignoreFile = "vendor|action|model|main"
