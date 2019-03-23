@@ -205,7 +205,7 @@ func (router *FindRouters) genRouterAPI(src string) (string, error) {
 			routerName = strings.TrimSpace(strings.Join(routerNameSlice[lenName-2:], " "))
 		}
 
-		apiStr := "// @ApiRouter(name=\"" + routerName + "\", method=\"" + router.Method + "\", path=\"" + router.Path + "\", group=\"" + router.ParentName + "\")"
+		apiStr := "// @ApiRouter(name=\"" + routerName + "\", method=\"" + router.Method + "\", path=\"" + router.Path + "\", group=\"" + router.ParentName + "\", handlers=\"" + strings.Join(router.HandlersName, ",") + "\")"
 
 		return apiStr, nil
 	}
@@ -246,7 +246,7 @@ func (router *FindRouters) genRouterAPI(src string) (string, error) {
 	} else {
 		routerName = strings.TrimSpace(strings.Join(routerNameSlice[lenName-2:], " "))
 	}
-	apiStr := "// @ApiRouter(name=\"" + routerName + "\", method=\"" + router.Method + "\", path=\"" + router.Path + "\", group=\"" + group.ParentName + "\")"
+	apiStr := "// @ApiRouter(name=\"" + routerName + "\", method=\"" + router.Method + "\", path=\"" + router.Path + "\", group=\"" + group.ParentName + "\", handlers=\"" + strings.Join(router.HandlersName, ",") + "\")"
 
 	return apiStr, nil
 }

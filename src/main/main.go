@@ -27,8 +27,8 @@ func main() {
 	flag.Parse()
 
 	// *ignoreFile = "vendor|action|model|main"
-	// *specify = ".go"
 	// *format = true
+	// *specify = ".go"
 
 	ignoreFiles := strings.Split(*ignoreFile, "|")
 	for k := range ignoreFiles {
