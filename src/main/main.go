@@ -23,21 +23,24 @@ func main() {
 	ignoreFile := flag.String("i", "vendor", "folder names, ignore multi folders, using | to split")
 	outputPath := flag.String("o", "./newPostman.json", "output file name")
 	specify := flag.String("s", "", "specify file suffix, eg: .go")
+	format := flag.Bool("format", false, "write API to your files")
 	flag.Parse()
 
-	*ignoreFile = "vendor|action|model|main"
+	// *ignoreFile = "vendor|action|model|main"
 
 	ignoreFiles := strings.Split(*ignoreFile, "|")
 	for k := range ignoreFiles {
 		ignoreFiles[k] = strings.TrimSpace(ignoreFiles[k])
 	}
 
-	err = action.ReformFile(*rootPath, ignoreFiles)
-	if err != nil {
-		log.Println(err.Error())
+	if *format {
+		err = action.ReformFile(*rootPath, ignoreFiles)
+		if err != nil {
+			log.Println(err.Error())
+			return
+		}
 		return
 	}
-	return
 
 	// 读取文件夹下所有go文件 -----------------------------------------------------
 	var serverPath string
