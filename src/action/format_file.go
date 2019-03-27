@@ -16,21 +16,34 @@ type FindRouters struct {
 	// RootRouter   bool
 	HandlersName []string
 	Method       string
+	FileName     string
 }
 
 // FindHandlers 查找控制器函数
-type FindHandlers struct {
-	HandlerPackageName string
-	HandlerName        string
-}
+// type FindHandlers struct {
+// 	HandlerPackageName string
+// 	HandlerName        string
+// }
 
 // routerGroups 路由组 缓存
 var routerGroups map[string]FindRouters
+
+// 最终的路由，不包含group
 var rootRouterGroups []FindRouters
+
+// ProjectFiles 缓存file，key-package name;
+var projectFiles map[string][]AllFiles
+
+// AllFiles 文件内容
+type AllFiles struct {
+	FileName string
+	Content  string
+}
 
 // ReformFile 逐行遍历，添加 Api 文件
 func ReformFile(rootPath string, ignoreFolders []string) error {
 	routerGroups = make(map[string]FindRouters)
+	projectFiles = make(map[string][]AllFiles)
 
 	files, err := ioutil.ReadDir(rootPath)
 	if err != nil {
@@ -44,6 +57,7 @@ func ReformFile(rootPath string, ignoreFolders []string) error {
 				ReformFile(rootPath+"/"+file.Name(), ignoreFolders)
 			}
 		} else {
+			// 最终要写入文件的内容
 			var finalFile []string
 			// 是否需要写文件
 			mark := false
@@ -57,19 +71,18 @@ func ReformFile(rootPath string, ignoreFolders []string) error {
 			bodySlice := strings.Split(string(body), "\n")
 
 			for k, str := range bodySlice {
-				// if k != 0 {
-				// 	if !strings.Contains(bodySlice[k-1], "@Api") {
-				// 		err = appendAPIs(&finalFile, str, &mark)
-				// 		if err != nil {
-				// 			continue
-				// 		}
-				// 	}
-				// } else {
-				// 	err := appendAPIs(&finalFile, str, &mark)
-				// 	if err != nil {
-				// 		continue
-				// 	}
-				// }
+				// 获取所有文件内容存入 projectFile 中
+				if strings.Contains(str, "package") {
+					// 获取 pacakge name
+					packageNameSlice := strings.Split(str, "package")
+					packageName := strings.TrimSpace(packageNameSlice[1])
+
+					// 存入 fileName 和 全部数据
+					var fileContent AllFiles
+					fileContent.FileName = rootPath + "/" + file.Name()
+					fileContent.Content = string(body)
+					projectFiles[packageName] = append(projectFiles[packageName], fileContent)
+				}
 
 				apiStr, err := appendAPIsNew(str)
 				if err != nil {
@@ -251,16 +264,22 @@ func parseRouterGroupProperties(src string) (apiStr string, err error) {
 	return apiStr, nil
 }
 
+// eg: itemAct.GROUP("/get", action.handler).GROUP("/get2", action.handler2).GET("/get3", action.handler3)
 func (router *FindRouters) genRouterAPI(src string) (string, error) {
+	// .GET 分割
 	routerSlice := strings.Split(src, "."+router.Method)
+	// itemAct.GROUP("/get", action.handler).GROUP("/get2", action.handler2)
 	groupsRaw := routerSlice[0]
+	// ("/get3", action.handler3)
 	routerRaw := routerSlice[1]
 
+	// 分析 ("/get3", action.handler3)
 	err := router.getPathAndHandler(strings.TrimSpace(routerRaw))
 	if err != nil {
 		return "", err
 	}
 
+	// 如果不包含 .GROUP
 	if !strings.Contains(groupsRaw, ".GROUP") {
 		router.getRouterParentName(src)
 		// 向上查找 parent
@@ -285,9 +304,13 @@ func (router *FindRouters) genRouterAPI(src string) (string, error) {
 		return apiStr, nil
 	}
 
+	// itemAct.GROUP("/get", action.handler).GROUP("/get2", action.handler2)
 	var group FindRouters
+
+	// [itemAct ("/get", action.handler) ("/get2", action.handler2)]
 	groupsSlice := strings.Split(groupsRaw, ".GROUP")
 	for k, v := range groupsSlice {
+		// 第一部分不处理
 		if k == 0 {
 			continue
 		}
@@ -326,6 +349,7 @@ func (router *FindRouters) genRouterAPI(src string) (string, error) {
 	return apiStr, nil
 }
 
+// 递归查找上级 group
 func (router *FindRouters) findingParent(parentName string) {
 	router.Path = routerGroups[parentName].Path + router.Path
 	router.HandlersName = append(router.HandlersName, routerGroups[parentName].HandlersName...)
@@ -334,31 +358,39 @@ func (router *FindRouters) findingParent(parentName string) {
 	}
 }
 
+// eg: itemAct.GROUP("/get", action.handler).GROUP("/get2", action.handler2).GROUP("/get3", action.handler3)
 func (router *FindRouters) getGroupParentName(srcWithourVariableName string) {
+	// eg: d.Router.GROUP("/get", action.handler)
 	if strings.Contains(srcWithourVariableName, ".Router.GROUP(\"") {
 		return
 	}
 
+	// 获取到 itemAct
 	parentNameSlice := strings.Split(srcWithourVariableName, ".GROUP")
 	router.ParentName = strings.TrimSpace(parentNameSlice[0])
 	return
 }
 
+// eg: itemAct.GET("/get", action.handler)
 func (router *FindRouters) getRouterParentName(srcWithourVariableName string) {
+	// eg: d.Router.GET("/get", action.handler)
 	if strings.Contains(srcWithourVariableName, ".Router."+router.Method+"(\"") {
 		return
 	}
 
+	// 获取到 itemAct
 	parentNameSlice := strings.Split(srcWithourVariableName, "."+router.Method)
 	router.ParentName = strings.TrimSpace(parentNameSlice[0])
 	return
 }
 
+// eg: itemAct.GROUP("/get", action.handler).GROUP("/get2", action.handler2).GROUP("/get3", action.handler3)
 func (router *FindRouters) getGroupPathAndHandlers(src string) {
 	// var err error
 	// 获取 path And Handler
 	groupSlice := strings.Split(src, ".GROUP")
 	for k, v := range groupSlice {
+		// 跳过第一部分
 		if k == 0 {
 			continue
 		}
@@ -372,6 +404,7 @@ func (router *FindRouters) getGroupPathAndHandlers(src string) {
 	return
 }
 
+// 获取单个路由的路径和处理器名称，eg: ("/get", action.handler)
 func (router *FindRouters) getPathAndHandler(paramStr string) (err error) {
 	if paramStr[0] != []byte("(")[0] || paramStr[len(paramStr)-1] != []byte(")")[0] {
 		return errors.New("format error")
