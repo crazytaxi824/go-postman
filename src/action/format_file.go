@@ -16,7 +16,7 @@ type FindRouters struct {
 	// RootRouter   bool
 	HandlersName []string
 	Method       string
-	FileName     string
+	RouterFile   string
 }
 
 // FindHandlers 查找控制器函数
@@ -24,6 +24,9 @@ type FindRouters struct {
 // 	HandlerPackageName string
 // 	HandlerName        string
 // }
+
+// 缓存 文件路径和文件名
+var tmpFileName string
 
 // routerGroups 路由组 缓存
 var routerGroups map[string]FindRouters
@@ -68,18 +71,21 @@ func ReformFile(rootPath string, ignoreFolders []string) error {
 				return err
 			}
 
+			// 缓存文件地址
+			tmpFileName = filePath
+
 			bodySlice := strings.Split(string(body), "\n")
 
 			for k, str := range bodySlice {
 				// 获取所有文件内容存入 projectFile 中
-				if strings.Contains(str, "package") {
+				if strings.Contains(str, "package") && !strings.Contains(str, "//") {
 					// 获取 pacakge name
 					packageNameSlice := strings.Split(str, "package")
 					packageName := strings.TrimSpace(packageNameSlice[1])
 
 					// 存入 fileName 和 全部数据
 					var fileContent AllFiles
-					fileContent.FileName = rootPath + "/" + file.Name()
+					fileContent.FileName = filePath
 					fileContent.Content = string(body)
 					projectFiles[packageName] = append(projectFiles[packageName], fileContent)
 				}
@@ -127,11 +133,6 @@ func ReformFile(rootPath string, ignoreFolders []string) error {
 			}
 		}
 	}
-
-	// for _, v := range rootRouterGroups {
-	// 	log.Println(v)
-	// }
-
 	return nil
 }
 
@@ -154,7 +155,8 @@ func appendAPIsNew(src string) (apiStr string, err error) {
 
 		return body, nil
 
-	} else if strings.Contains(src, ".GROUP(\"") && !strings.Contains(src, "//") {
+		// } else if strings.Contains(src, ".GROUP(\"") && !strings.Contains(src, "//") {
+	} else if !strings.Contains(src, "//") {
 		r, err := parseRouterGroupProperties(src)
 		if err != nil {
 			return "", err
@@ -163,73 +165,23 @@ func appendAPIsNew(src string) (apiStr string, err error) {
 		if r != "" {
 			return r, nil
 		}
-	} else if !strings.Contains(src, "//") {
-		var router FindRouters
-		if !router.getRouterMethod(src) {
-			return "", nil
-		}
-
-		r, err := router.genRouterAPI(src)
-		if err != nil {
-			return "", err
-		}
-
-		if r != "" {
-			return r, nil
-		}
 	}
+	// } else if !strings.Contains(src, "//") && !strings.Contains(src, ".GROUP(\"") {
+	// 	var router FindRouters
+	// 	if !router.getRouterMethod(src) {
+	// 		return "", nil
+	// 	}
+
+	// 	r, err := router.genRouterAPI(src)
+	// 	if err != nil {
+	// 		return "", err
+	// 	}
+
+	// 	if r != "" {
+	// 		return r, nil
+	// 	}
+	// }
 	return "", nil
-}
-
-// appendAPIs appendAPIs
-func appendAPIs(finalFile *[]string, src string, mark *bool) (err error) {
-	if strings.Contains(src, ".QueryValue(\"") && strings.Contains(src, "\")") && !strings.Contains(src, "//") {
-		i := strings.Index(src, ".QueryValue(\"")
-		f := strings.Index(src, "\")")
-		key := strings.TrimSpace(src[i+13 : f])
-
-		query := "// @ApiQuery(key=\"" + key + "\", desc= \"\", value=\"\")"
-
-		*finalFile = append(*finalFile, query)
-		*mark = true
-
-	} else if strings.Contains(src, ".FormValue(\"") && strings.Contains(src, "\")") && !strings.Contains(src, "//") {
-		i := strings.Index(src, ".FormValue(\"")
-		f := strings.Index(src, "\")")
-		key := strings.TrimSpace(src[i+12 : f])
-
-		body := "// @ApiBody(key=\"" + key + "\", desc=\"\", value=\"\")"
-
-		*finalFile = append(*finalFile, body)
-		*mark = true
-
-	} else if strings.Contains(src, ".GROUP(\"") && !strings.Contains(src, "//") {
-		r, err := parseRouterGroupProperties(src)
-		if err != nil {
-			return err
-		}
-
-		if r != "" {
-			*finalFile = append(*finalFile, r)
-			*mark = true
-		}
-	} else if !strings.Contains(src, "//") {
-		var router FindRouters
-		if !router.getRouterMethod(src) {
-			return nil
-		}
-
-		r, err := router.genRouterAPI(src)
-		if err != nil {
-			return err
-		}
-
-		if r != "" {
-			*finalFile = append(*finalFile, r)
-			*mark = true
-		}
-	}
-	return nil
 }
 
 func parseRouterGroupProperties(src string) (apiStr string, err error) {
@@ -266,6 +218,8 @@ func parseRouterGroupProperties(src string) (apiStr string, err error) {
 
 // eg: itemAct.GROUP("/get", action.handler).GROUP("/get2", action.handler2).GET("/get3", action.handler3)
 func (router *FindRouters) genRouterAPI(src string) (string, error) {
+	// 缓存路由 文件名
+	router.RouterFile = tmpFileName
 	// .GET 分割
 	routerSlice := strings.Split(src, "."+router.Method)
 	// itemAct.GROUP("/get", action.handler).GROUP("/get2", action.handler2)
@@ -466,3 +420,54 @@ func (router *FindRouters) getRouterMethod(src string) (mark bool) {
 	}
 	return false
 }
+
+// // appendAPIs appendAPIs
+// func appendAPIs(finalFile *[]string, src string, mark *bool) (err error) {
+// 	if strings.Contains(src, ".QueryValue(\"") && strings.Contains(src, "\")") && !strings.Contains(src, "//") {
+// 		i := strings.Index(src, ".QueryValue(\"")
+// 		f := strings.Index(src, "\")")
+// 		key := strings.TrimSpace(src[i+13 : f])
+
+// 		query := "// @ApiQuery(key=\"" + key + "\", desc= \"\", value=\"\")"
+
+// 		*finalFile = append(*finalFile, query)
+// 		*mark = true
+
+// 	} else if strings.Contains(src, ".FormValue(\"") && strings.Contains(src, "\")") && !strings.Contains(src, "//") {
+// 		i := strings.Index(src, ".FormValue(\"")
+// 		f := strings.Index(src, "\")")
+// 		key := strings.TrimSpace(src[i+12 : f])
+
+// 		body := "// @ApiBody(key=\"" + key + "\", desc=\"\", value=\"\")"
+
+// 		*finalFile = append(*finalFile, body)
+// 		*mark = true
+
+// 	} else if strings.Contains(src, ".GROUP(\"") && !strings.Contains(src, "//") {
+// 		r, err := parseRouterGroupProperties(src)
+// 		if err != nil {
+// 			return err
+// 		}
+
+// 		if r != "" {
+// 			*finalFile = append(*finalFile, r)
+// 			*mark = true
+// 		}
+// 	} else if !strings.Contains(src, "//") {
+// 		var router FindRouters
+// 		if !router.getRouterMethod(src) {
+// 			return nil
+// 		}
+
+// 		r, err := router.genRouterAPI(src)
+// 		if err != nil {
+// 			return err
+// 		}
+
+// 		if r != "" {
+// 			*finalFile = append(*finalFile, r)
+// 			*mark = true
+// 		}
+// 	}
+// 	return nil
+// }
