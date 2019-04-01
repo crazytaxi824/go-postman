@@ -36,11 +36,28 @@ func main() {
 	}
 
 	if *format {
+		action.ProjectFiles = make(map[string][]action.AllFiles)
+
 		err = action.ReformFile(*rootPath, ignoreFiles)
 		if err != nil {
 			log.Println(err.Error())
 			return
 		}
+
+		err = action.AnalysisFindRouter()
+		if err != nil {
+			log.Println(err.Error())
+			return
+		}
+
+		for _, files := range action.ProjectFiles {
+			for _, file := range files {
+				if file.FormatMark {
+					log.Println("file formated: " + file.FileName)
+				}
+			}
+		}
+
 		return
 	}
 
