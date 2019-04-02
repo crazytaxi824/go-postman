@@ -107,6 +107,8 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 							rawHandlerSlice = append(rawHandlerSlice, trimBody)
 						}
 					}
+				} else if string(v) == "}" {
+					rawHandlerSlice = append(rawHandlerSlice, "}")
 				}
 			}
 			// 分析 handler, body, query, header

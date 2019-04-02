@@ -10,10 +10,21 @@ import (
 // FormatHandlers 将handler和对应的body放入 handlerMap 缓存中
 func FormatHandlers(handlers []string) {
 	var handlerIndex []int
+	var endIndex []int
+	var mark bool
 	for k, h := range handlers {
-		if strings.Contains(h, "@ApiHandler") {
+		if !mark && strings.Contains(h, "@ApiHandler") {
 			handlerIndex = append(handlerIndex, k)
+			mark = true
+		} else if mark && h == "}" {
+			endIndex = append(endIndex, k)
+			mark = false
 		}
+	}
+
+	if len(handlerIndex) != len(endIndex) {
+		log.Println("fatal error —— format error")
+		return
 	}
 
 	// 获取 handler name
@@ -35,26 +46,13 @@ func FormatHandlers(handlers []string) {
 
 			// // 匹配 handler name 和 router name
 			// // 如果 handler name 不匹配则会在这里被丢弃
-
-			if i > len(handlerIndex)-2 {
-				for _, handler := range handlers[handlerIndex[i]+1:] {
-					// 将参数传入对应的 handlerMap 中
-					err = passQueryBodyHeaderToHandler(handler, data["name"])
-					if err != nil {
-						log.Println("warning: format error —— " + handler)
-						log.Println(err.Error())
-						return
-					}
-				}
-			} else {
-				for _, handler := range handlers[handlerIndex[i]+1 : handlerIndex[i+1]] {
-					// 将参数传入对应的 handlerMap 中
-					err = passQueryBodyHeaderToHandler(handler, data["name"])
-					if err != nil {
-						log.Println("warning: format error —— " + handler)
-						log.Println(err.Error())
-						return
-					}
+			for _, handler := range handlers[handlerIndex[i]+1 : endIndex[i]] {
+				// 将参数传入对应的 handlerMap 中
+				err = passQueryBodyHeaderToHandler(handler, data["name"])
+				if err != nil {
+					log.Println("warning: format error —— " + handler)
+					log.Println(err.Error())
+					return
 				}
 			}
 		}
