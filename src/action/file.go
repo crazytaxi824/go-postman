@@ -29,13 +29,13 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 				ReadAllFiles(rootPath+"/"+file.Name(), serverPath, ignoreFolders, routers, fileSuffix)
 			}
 		} else {
-			var rawHandlerSlice []string
-
 			if fileSuffix != "" {
 				if path.Ext(file.Name()) != fileSuffix {
 					continue
 				}
 			}
+
+			var rawHandlerSlice []string
 
 			body, err := ioutil.ReadFile(rootPath + "/" + file.Name())
 			if err != nil {

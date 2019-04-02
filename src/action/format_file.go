@@ -3,6 +3,7 @@ package action
 import (
 	"errors"
 	"io/ioutil"
+	"path"
 	"strings"
 )
 
@@ -38,7 +39,7 @@ type AllFiles struct {
 }
 
 // ReformFile 逐行遍历，添加 Api 文件
-func ReformFile(rootPath string, ignoreFolders []string) error {
+func ReformFile(rootPath string, ignoreFolders []string, fileSuffix string) error {
 	routerGroups = make(map[string]FindRouters)
 
 	files, err := ioutil.ReadDir(rootPath)
@@ -50,9 +51,15 @@ func ReformFile(rootPath string, ignoreFolders []string) error {
 	for _, file := range files {
 		if file.IsDir() {
 			if !inSlice(file.Name(), ignoreFolders) {
-				ReformFile(rootPath+"/"+file.Name(), ignoreFolders)
+				ReformFile(rootPath+"/"+file.Name(), ignoreFolders, fileSuffix)
 			}
 		} else {
+			if fileSuffix != "" {
+				if path.Ext(file.Name()) != fileSuffix {
+					continue
+				}
+			}
+
 			tmpPackageName = ""
 
 			// 最终要写入文件的内容

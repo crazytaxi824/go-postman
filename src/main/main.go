@@ -20,7 +20,7 @@ func main() {
 	var err error
 
 	rootPath := flag.String("p", "./src", "read all files from this path, including sub folders")
-	ignoreFile := flag.String("i", "vendor", "folder names, ignore multi folders, using | to split")
+	ignoreFolders := flag.String("i", "vendor", "folder names, ignore multi folders, using | to split")
 	outputPath := flag.String("o", "./newPostman.json", "output file name")
 	specify := flag.String("s", "", "specify file suffix, eg: .go")
 	format := flag.Bool("format", false, "write API to your files, package HttpDispatch only")
@@ -30,9 +30,9 @@ func main() {
 	// *format = true
 	// *specify = ".go"
 
-	ignoreFiles := strings.Split(*ignoreFile, "|")
-	for k := range ignoreFiles {
-		ignoreFiles[k] = strings.TrimSpace(ignoreFiles[k])
+	ignoreFolderSlice := strings.Split(*ignoreFolders, "|")
+	for k := range ignoreFolderSlice {
+		ignoreFolderSlice[k] = strings.TrimSpace(ignoreFolderSlice[k])
 	}
 
 	action.HandlerMap = make(map[string][]action.RawHandlerStruct)
@@ -40,7 +40,7 @@ func main() {
 
 	if *format {
 
-		err = action.ReformFile(*rootPath, ignoreFiles)
+		err = action.ReformFile(*rootPath, ignoreFolderSlice, *specify)
 		if err != nil {
 			log.Println(err.Error())
 			return
@@ -73,7 +73,7 @@ func main() {
 	// 读取文件夹下所有go文件 -----------------------------------------------------
 	var serverPath string
 	var routers []action.RawRouterStruct
-	err = action.ReadAllFiles(*rootPath, &serverPath, ignoreFiles, &routers, *specify)
+	err = action.ReadAllFiles(*rootPath, &serverPath, ignoreFolderSlice, &routers, *specify)
 	if err != nil {
 		log.Println(err.Error())
 		return
