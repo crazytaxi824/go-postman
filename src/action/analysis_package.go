@@ -39,7 +39,7 @@ func AnalysisFindRouter() error {
 			if _, ok := projectHandler[handlerName]; ok {
 				continue
 			}
-			projectHandler[handlerName] = AnalysisPackage(handlerName, router.RouterPackageName)
+			projectHandler[handlerName] = AnalysisRawPackage(handlerName, router.RouterPackageName)
 		}
 	}
 
@@ -51,6 +51,7 @@ func AnalysisFindRouter() error {
 	}
 
 	// 写文件
+
 	for _, handler := range projectHandler {
 		if len(handler.VarStructs) < 1 {
 			handler.analysisPackage()
@@ -62,9 +63,9 @@ func AnalysisFindRouter() error {
 	return nil
 }
 
-// AnalysisPackage 传入 handlers 里面的 handlers name
+// AnalysisRawPackage 传入 handlers 里面的 handlers name
 // handler = "action.handler1, itemAct.handler2, "
-func AnalysisPackage(handlerName, packageName string) HandlerPropStruct {
+func AnalysisRawPackage(handlerName, packageName string) HandlerPropStruct {
 	var handler HandlerPropStruct
 	handler.FullName = handlerName
 	handler.HandlerPackageName = packageName
@@ -119,6 +120,7 @@ func AnalysisPackage(handlerName, packageName string) HandlerPropStruct {
 			handler.HandlerFuncName = strings.TrimSpace(packageTypeNameSlice[lenPT-1])
 		}
 	}
+	// log.Println(handler.FullName, handler.HandlerPackageName, handler.HandlerFuncName, handler.VarStructs)
 	return handler
 }
 
@@ -139,14 +141,14 @@ func (vs *VarStruct) findFirstVarTypeStruct() error {
 				varTypeName := strings.TrimSpace(tmpTypeName[1])
 				if strings.Contains(varTypeName, ".") {
 					tmp := strings.Split(varTypeName, ".")
-					var typeStruct TypeStruct
-					typeStruct.typePackageName = strings.TrimSpace(tmp[0])
-					typeStruct.typeName = strings.TrimSpace(tmp[1])
+
+					vs.VarType.typePackageName = strings.TrimSpace(tmp[0])
+					vs.VarType.typeName = strings.TrimSpace(tmp[1])
 					return nil
 				}
-				var typeStruct TypeStruct
-				typeStruct.typePackageName = strings.TrimSpace(vs.VarPackageName)
-				typeStruct.typeName = strings.TrimSpace(varTypeName)
+
+				vs.VarType.typePackageName = strings.TrimSpace(vs.VarPackageName)
+				vs.VarType.typeName = strings.TrimSpace(varTypeName)
 				return nil
 			}
 		}
@@ -209,6 +211,7 @@ func (h *HandlerPropStruct) analysisHandlerVarStruct() error {
 			}
 		}
 	}
+	log.Println(h.FullName, h.HandlerPackageName, h.HandlerFuncName, h.VarStructs)
 
 	return nil
 }
@@ -219,96 +222,154 @@ func (h *HandlerPropStruct) analysisLastVar() {
 	lastPackageName := h.VarStructs[lenType-1].VarType.typePackageName
 	lastTypeName := h.VarStructs[lenType-1].VarType.typeName
 
-	var finalFileContent []string
-	var files []AllFiles
-	files = ProjectFiles[lastPackageName]
-	for kk := range files {
-		// var mark bool
-		bodySlice := strings.Split(files[kk].Content, "\n")
+	for kk := range ProjectFiles[lastPackageName] {
+		bodySlice := strings.Split(ProjectFiles[lastPackageName][kk].Content, "\n")
 		for k, bodyLine := range bodySlice {
 			if k == 0 {
-				finalFileContent = append(finalFileContent, bodyLine)
 				continue
 			}
 
-			if strings.Contains(bodyLine, "func ") && strings.Contains(bodyLine, lastTypeName+") "+h.HandlerFuncName) && strings.Contains(bodyLine, "httpdispatcher.Context) error {") && !strings.Contains(bodyLine, "//") {
+			if strings.Contains(bodyLine, "func ") && strings.Contains(bodyLine, lastTypeName+") "+h.HandlerFuncName+"(") && strings.Contains(bodyLine, "httpdispatcher.Context) error {") && !strings.Contains(bodyLine, "//") {
+
 				key := "// @ApiHandler(name=\"" + h.FullName + "\")"
 				if strings.Contains(bodySlice[k-1], "//") && strings.Contains(bodySlice[k-1], "@ApiHandler") {
 					if !strings.Contains(bodySlice[k-1], key) {
-						lenFinalFile := len(finalFileContent)
-						finalFileContent = finalFileContent[:lenFinalFile-1]
-						finalFileContent = append(finalFileContent, key)
-						files[kk].FormatMark = true
+						tmpBodyFront := bodySlice[: k-1 : k-1]
+						tmpBodyEnd := bodySlice[k:]
+						final := tmpBodyFront
+						final = append(final, key)
+						final = append(final, tmpBodyEnd...)
+						ProjectFiles[lastPackageName][kk].Content = strings.Join(final, "\n")
+						ProjectFiles[lastPackageName][kk].FormatMark = true
+						return
 					}
-				} else {
-					finalFileContent = append(finalFileContent, key)
-					files[kk].FormatMark = true
+					return
 				}
+
+				tmpBodyFront := bodySlice[:k:k]
+				tmpBodyEnd := bodySlice[k:]
+				final := tmpBodyFront
+				final = append(final, key)
+				final = append(final, tmpBodyEnd...)
+
+				ProjectFiles[lastPackageName][kk].Content = strings.Join(final, "\n")
+				ProjectFiles[lastPackageName][kk].FormatMark = true
+				return
 			}
-			finalFileContent = append(finalFileContent, bodyLine)
 		}
-
-		files[kk].Content = strings.Join(finalFileContent, "\n")
-
-		// TODO 写文件
-		// if mark {
-		// 	log.Println("file formated: " + file.FileName)
-
-		// 	fileContent := strings.Join(finalFileContent, "\n")
-		// 	// 写文件
-		// 	err := WriteFiles(file.FileName, []byte(fileContent))
-		// 	if err != nil {
-		// 		return
-		// 	}
-		// }
 	}
 }
 
 func (h *HandlerPropStruct) analysisPackage() {
-	var files []AllFiles
-	files = ProjectFiles[h.HandlerPackageName]
+	for kk := range ProjectFiles[h.HandlerPackageName] {
 
-	for kk := range files {
-		var finalFileContent []string
-
-		bodySlice := strings.Split(files[kk].Content, "\n")
+		bodySlice := strings.Split(ProjectFiles[h.HandlerPackageName][kk].Content, "\n")
 		for k, bodyLine := range bodySlice {
 			if k == 0 {
-				finalFileContent = append(finalFileContent, bodyLine)
 				continue
 			}
 
 			if strings.Contains(bodyLine, "func "+h.HandlerFuncName+"(") && strings.Contains(bodyLine, "httpdispatcher.Context) error {") && !strings.Contains(bodyLine, "//") {
+
 				key := "// @ApiHandler(name=\"" + h.FullName + "\")"
 				if strings.Contains(bodySlice[k-1], "//") && strings.Contains(bodySlice[k-1], "@ApiHandler") {
 					if !strings.Contains(bodySlice[k-1], key) {
-						lenFinalFile := len(finalFileContent)
-						finalFileContent = finalFileContent[:lenFinalFile-1]
-						finalFileContent = append(finalFileContent, key)
-						files[kk].FormatMark = true
+						tmpBodyFront := bodySlice[: k-1 : k-1]
+						tmpBodyEnd := bodySlice[k:]
+						final := tmpBodyFront
+						final = append(final, key)
+						final = append(final, tmpBodyEnd...)
+						ProjectFiles[h.HandlerPackageName][kk].Content = strings.Join(final, "\n")
+						ProjectFiles[h.HandlerPackageName][kk].FormatMark = true
+						return
 					}
-				} else {
-					finalFileContent = append(finalFileContent, key)
-					files[kk].FormatMark = true
+					return
 				}
+
+				tmpBodyFront := bodySlice[:k:k]
+				tmpBodyEnd := bodySlice[k:]
+				final := tmpBodyFront
+				final = append(final, key)
+				final = append(final, tmpBodyEnd...)
+				ProjectFiles[h.HandlerPackageName][kk].Content = strings.Join(final, "\n")
+				ProjectFiles[h.HandlerPackageName][kk].FormatMark = true
+				return
+
 			}
-			finalFileContent = append(finalFileContent, bodyLine)
 		}
-
-		files[kk].Content = strings.Join(finalFileContent, "\n")
-
-		// TODO 写文件
-		// if mark {
-		// 	log.Println("file formated: " + files[kk].FileName)
-
-		// 	// fileContent := strings.Join(finalFileContent, "\n")
-
-		// 	// log.Println(fileContent)
-		// 	// // 写文件
-		// 	// err := WriteFiles(file.FileName, []byte(fileContent))
-		// 	// if err != nil {
-		// 	// 	return
-		// 	// }
-		// }
 	}
 }
+
+// func (h *HandlerPropStruct) analysisLastVar() {
+// 	lenType := len(h.VarStructs)
+
+// 	lastPackageName := h.VarStructs[lenType-1].VarType.typePackageName
+// 	lastTypeName := h.VarStructs[lenType-1].VarType.typeName
+
+// 	var finalFileContent []string
+// 	for kk := range ProjectFiles[lastPackageName] {
+// 		// var mark bool
+// 		bodySlice := strings.Split(ProjectFiles[lastPackageName][kk].Content, "\n")
+// 		for k, bodyLine := range bodySlice {
+// 			if k == 0 {
+// 				finalFileContent = append(finalFileContent, bodyLine)
+// 				continue
+// 			}
+
+// 			if strings.Contains(bodyLine, "func ") && strings.Contains(bodyLine, lastTypeName+") "+h.HandlerFuncName) && strings.Contains(bodyLine, "httpdispatcher.Context) error {") && !strings.Contains(bodyLine, "//") {
+// 				key := "// @ApiHandler(name=\"" + h.FullName + "\")"
+// 				if strings.Contains(bodySlice[k-1], "//") && strings.Contains(bodySlice[k-1], "@ApiHandler") {
+// 					if !strings.Contains(bodySlice[k-1], key) {
+// 						lenFinalFile := len(finalFileContent)
+// 						finalFileContent = finalFileContent[:lenFinalFile-1]
+// 						finalFileContent = append(finalFileContent, key)
+// 						ProjectFiles[lastPackageName][kk].FormatMark = true
+// 					}
+// 				} else {
+// 					finalFileContent = append(finalFileContent, key)
+// 					ProjectFiles[lastPackageName][kk].FormatMark = true
+// 				}
+// 			}
+// 			finalFileContent = append(finalFileContent, bodyLine)
+// 		}
+
+// 		ProjectFiles[lastPackageName][kk].Content = strings.Join(finalFileContent, "\n")
+
+// 	}
+// }
+
+// func (h *HandlerPropStruct) analysisPackage() {
+// 	// var files []AllFiles
+// 	// files = ProjectFiles[h.HandlerPackageName]
+
+// 	for kk := range ProjectFiles[h.HandlerPackageName] {
+// 		var finalFileContent []string
+
+// 		bodySlice := strings.Split(ProjectFiles[h.HandlerPackageName][kk].Content, "\n")
+// 		for k, bodyLine := range bodySlice {
+// 			if k == 0 {
+// 				finalFileContent = append(finalFileContent, bodyLine)
+// 				continue
+// 			}
+
+// 			if strings.Contains(bodyLine, "func "+h.HandlerFuncName+"(") && strings.Contains(bodyLine, "httpdispatcher.Context) error {") && !strings.Contains(bodyLine, "//") {
+// 				key := "// @ApiHandler(name=\"" + h.FullName + "\")"
+// 				if strings.Contains(bodySlice[k-1], "//") && strings.Contains(bodySlice[k-1], "@ApiHandler") {
+// 					if !strings.Contains(bodySlice[k-1], key) {
+// 						lenFinalFile := len(finalFileContent)
+// 						finalFileContent = finalFileContent[:lenFinalFile-1]
+// 						finalFileContent = append(finalFileContent, key)
+// 						ProjectFiles[h.HandlerPackageName][kk].FormatMark = true
+// 					}
+// 				} else {
+// 					finalFileContent = append(finalFileContent, key)
+// 					ProjectFiles[h.HandlerPackageName][kk].FormatMark = true
+// 				}
+// 			}
+// 			finalFileContent = append(finalFileContent, bodyLine)
+// 		}
+
+// 		ProjectFiles[h.HandlerPackageName][kk].Content = strings.Join(finalFileContent, "\n")
+
+// 	}
+// }

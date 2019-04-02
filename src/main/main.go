@@ -26,7 +26,7 @@ func main() {
 	format := flag.Bool("format", false, "write API to your files, package HttpDispatch only")
 	flag.Parse()
 
-	// *ignoreFile = "vendor|action|model|main"
+	*ignoreFile = "vendor|action|model|main"
 	// *format = true
 	// *specify = ".go"
 
@@ -53,7 +53,14 @@ func main() {
 		for _, files := range action.ProjectFiles {
 			for _, file := range files {
 				if file.FormatMark {
-					log.Println("file formated: " + file.FileName)
+					// log.Println("file formated: " + file.FileName)
+
+					// 写文件
+					err = action.WriteFiles(file.FileName, []byte(file.Content))
+					if err != nil {
+						log.Println(err)
+						return
+					}
 				}
 			}
 		}

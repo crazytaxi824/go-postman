@@ -124,19 +124,6 @@ func ReformFile(rootPath string, ignoreFolders []string) error {
 				continue
 			}
 
-			// TODO 分析 FindRouter
-
-			// 写文件
-			// if mark {
-			// 	log.Println("file formated: " + rootPath + "/" + fileName)
-			// 	// fileContent := strings.Join(finalFile, "\n")
-
-			// 	// 写文件
-			// 	// err = WriteFiles(filePath, []byte(fileContent))
-			// 	// if err != nil {
-			// 	// 	return err
-			// 	// }
-			// }
 		}
 	}
 	return nil
