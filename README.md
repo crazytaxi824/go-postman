@@ -24,13 +24,13 @@ func server(){
 ```go
 func Router(){
   ...
-  // @ApiRouter(path="/article/add", method="POST", group="article", handlers="add article, mid")
+  // @ApiRouter(path="/article/add", desc="add article", method="POST", group="article", handlers="add article, mid")
   article.Get("/add", articleAct.AddArticle)
   
-  // @ApiRouter(path="/m/article/edit",method="POST",group="article", handlers="edit article, mid")
+  // @ApiRouter(path="/m/article/edit",desc="edit article",method="POST",group="article", handlers="edit article, mid")
   article.Get("/edit", articleAct.EditArticle)
   
-  // @ApiRouter(path="/m/article/list",method="GET",group="article", handlers="list article, mid")  
+  // @ApiRouter(path="/m/article/list",desc="list article",method="GET",group="article", handlers="list article, mid")  
   article.Get("/list", articleAct.ListArticle)
   ...
 }

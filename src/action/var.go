@@ -17,7 +17,7 @@ var HandlerMap map[string][]RawHandlerStruct
 
 // RawRouterStruct RawRouterStruct
 type RawRouterStruct struct {
-	// RouterName   string `json:"name"`
+	RouterName   string `json:"desc"`
 	Method       string `json:"method"`
 	RouterPath   string `json:"path"`
 	GroupName    string `json:"group"`

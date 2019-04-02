@@ -1,6 +1,9 @@
 package action
 
-import "model"
+import (
+	"model"
+	"strings"
+)
 
 // GenFolderAndItemStruct 生成 folder 和 items 给 postman 用
 func GenFolderAndItemStruct(groups map[string][]RawRouterStruct) (folders []model.FolderStruct, items []model.RouterStruct) {
@@ -12,7 +15,11 @@ func GenFolderAndItemStruct(groups map[string][]RawRouterStruct) (folders []mode
 
 			for _, r := range groups[folderName] {
 				var router model.RouterStruct
-				router.Name = r.RouterPath
+				if strings.TrimSpace(r.RouterName) != "" {
+					router.Name = r.RouterName
+				} else {
+					router.Name = r.RouterPath
+				}
 				router.Response = make([]interface{}, 0)
 				router.Request.URL = r.URL
 				router.Request.Method = r.Method
@@ -26,7 +33,11 @@ func GenFolderAndItemStruct(groups map[string][]RawRouterStruct) (folders []mode
 		} else {
 			for _, r := range groups[folderName] {
 				var router model.RouterStruct
-				router.Name = r.RouterPath
+				if strings.TrimSpace(r.RouterName) != "" {
+					router.Name = r.RouterName
+				} else {
+					router.Name = r.RouterPath
+				}
 				router.Response = make([]interface{}, 0)
 				router.Request.URL = r.URL
 				router.Request.Method = r.Method

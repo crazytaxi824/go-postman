@@ -40,7 +40,7 @@ func main() {
 
 	if *format {
 
-		err = action.ReformFile(*rootPath, ignoreFolderSlice, *specify)
+		err = action.ReformatFile(*rootPath, ignoreFolderSlice, *specify)
 		if err != nil {
 			log.Println(err.Error())
 			return

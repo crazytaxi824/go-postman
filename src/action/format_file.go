@@ -38,8 +38,8 @@ type AllFiles struct {
 	FormatMark bool
 }
 
-// ReformFile 逐行遍历，添加 Api 文件
-func ReformFile(rootPath string, ignoreFolders []string, fileSuffix string) error {
+// ReformatFile 逐行遍历，添加 Api 文件
+func ReformatFile(rootPath string, ignoreFolders []string, fileSuffix string) error {
 	routerGroups = make(map[string]FindRouters)
 
 	files, err := ioutil.ReadDir(rootPath)
@@ -51,7 +51,7 @@ func ReformFile(rootPath string, ignoreFolders []string, fileSuffix string) erro
 	for _, file := range files {
 		if file.IsDir() {
 			if !inSlice(file.Name(), ignoreFolders) {
-				ReformFile(rootPath+"/"+file.Name(), ignoreFolders, fileSuffix)
+				ReformatFile(rootPath+"/"+file.Name(), ignoreFolders, fileSuffix)
 			}
 		} else {
 			if fileSuffix != "" {
