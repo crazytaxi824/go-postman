@@ -35,12 +35,38 @@ func main() {
 		ignoreFiles[k] = strings.TrimSpace(ignoreFiles[k])
 	}
 
+	action.HandlerMap = make(map[string][]action.RawHandlerStruct)
+	action.ProjectFiles = make(map[string][]action.AllFiles)
+
 	if *format {
+
 		err = action.ReformFile(*rootPath, ignoreFiles)
 		if err != nil {
 			log.Println(err.Error())
 			return
 		}
+
+		err = action.AnalysisFindRouter()
+		if err != nil {
+			log.Println(err.Error())
+			return
+		}
+
+		for _, files := range action.ProjectFiles {
+			for _, file := range files {
+				if file.FormatMark {
+					// log.Println("file formated: " + file.FileName)
+
+					// 写文件
+					err = action.WriteFiles(file.FileName, []byte(file.Content))
+					if err != nil {
+						log.Println(err)
+						return
+					}
+				}
+			}
+		}
+
 		return
 	}
 
