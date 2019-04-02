@@ -18,12 +18,6 @@ type FindRouters struct {
 	RouterPackageName string
 }
 
-// FindHandlers 查找控制器函数
-// type FindHandlers struct {
-// 	HandlerPackageName string
-// 	HandlerName        string
-// }
-
 // 缓存 文件路径和文件名
 var tmpPackageName string
 
@@ -228,17 +222,6 @@ func (router *FindRouters) genRouterAPI(src string) (string, error) {
 		// 添加到 rootRouterGroups
 		rootRouterGroups = append(rootRouterGroups, *router)
 
-		// routerNameSlice := strings.Split(router.Path, "/")
-		// var routerName string
-		// lenName := len(routerNameSlice)
-		// if lenName < 1 {
-		// 	return "", errors.New("no path")
-		// } else if lenName < 2 {
-		// 	routerName = routerNameSlice[0]
-		// } else {
-		// 	routerName = strings.TrimSpace(strings.Join(routerNameSlice[lenName-2:], " "))
-		// }
-
 		apiStr := "// @ApiRouter(path=\"" + router.Path + "\", method=\"" + router.Method + "\", group=\"" + router.ParentName + "\", handlers=\"" + strings.Join(router.HandlersName, ",") + "\")"
 
 		return apiStr, nil
@@ -274,16 +257,6 @@ func (router *FindRouters) genRouterAPI(src string) (string, error) {
 	// 添加到 rootRouterGroups
 	rootRouterGroups = append(rootRouterGroups, *router)
 
-	// routerNameSlice := strings.Split(router.Path, "/")
-	// var routerName string
-	// lenName := len(routerNameSlice)
-	// if lenName < 1 {
-	// 	return "", errors.New("no path")
-	// } else if lenName < 2 {
-	// 	routerName = routerNameSlice[0]
-	// } else {
-	// 	routerName = strings.TrimSpace(strings.Join(routerNameSlice[lenName-2:], " "))
-	// }
 	apiStr := "// @ApiRouter(path=\"" + router.Path + "\", method=\"" + router.Method + "\", group=\"" + group.ParentName + "\", handlers=\"" + strings.Join(router.HandlersName, ",") + "\")"
 
 	return apiStr, nil
