@@ -26,7 +26,7 @@ func (router *RawRouterStruct) GenHeaderAndURLStruct(serverPath string) (err err
 			}
 		}
 
-		if !hasContentType {
+		if !hasContentType && router.Method != "GET" {
 			var headerUrlencode model.HeaderStruct
 			headerUrlencode.Type = "text"
 			headerUrlencode.Key = "Content-Type"
