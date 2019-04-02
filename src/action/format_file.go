@@ -3,6 +3,7 @@ package action
 import (
 	"errors"
 	"io/ioutil"
+	"log"
 	"path"
 	"strings"
 )
@@ -84,7 +85,7 @@ func ReformatFile(rootPath string, ignoreFolders []string, fileSuffix string) er
 					tmpPackageName = strings.TrimSpace(packageNameSlice[1])
 				}
 
-				apiStr, err := appendAPIsNew(str)
+				apiStr, param, err := appendAPIsNew(str)
 				if err != nil {
 					finalFile = append(finalFile, str)
 					continue
@@ -92,19 +93,73 @@ func ReformatFile(rootPath string, ignoreFolders []string, fileSuffix string) er
 
 				if apiStr != "" {
 					if k > 0 {
+
 						if strings.Contains(bodySlice[k-1], "@Api") && strings.Contains(bodySlice[k-1], "//") && strings.TrimSpace(bodySlice[k-1]) != strings.TrimSpace(apiStr) {
-							finalFile = finalFile[:len(finalFile)-1]
-							finalFile = append(finalFile, apiStr)
-							// fileName = file.Name()
-							mark = true
+							if param == "ApiQuery" || param == "ApiBody" || param == "ApiHeader" || param == "ApiRouter" {
+								tmp := strings.Split(bodySlice[k-1], param)
+								if len(tmp) < 2 {
+									// 删除再插入
+									finalFile = finalFile[: len(finalFile)-1 : len(finalFile)-1]
+									finalFile = append(finalFile, apiStr)
+									mark = true
+								}
+
+								r, err := ParsePMstructToJSONformat(strings.TrimSpace(tmp[1]))
+								if err != nil {
+									// 删除再插入
+									finalFile = finalFile[: len(finalFile)-1 : len(finalFile)-1]
+									finalFile = append(finalFile, apiStr)
+									mark = true
+								}
+
+								rawData := make(map[string]string)
+								err = JSON.UnmarshalFromString(r, &rawData)
+								if err != nil {
+									// 删除再插入
+									finalFile = finalFile[: len(finalFile)-1 : len(finalFile)-1]
+									finalFile = append(finalFile, apiStr)
+									mark = true
+								}
+
+								tmpAPI := strings.Split(apiStr, param)
+								rAPI, err := ParsePMstructToJSONformat(strings.TrimSpace(tmpAPI[1]))
+								if err != nil {
+									log.Println(err)
+									return err
+								}
+
+								apiData := make(map[string]string)
+								err = JSON.UnmarshalFromString(rAPI, &apiData)
+								if err != nil {
+									log.Println(err)
+									return err
+								}
+
+								if param != "ApiRouter" {
+									if apiData["key"] != rawData["key"] {
+										// 删除再插入
+										finalFile = finalFile[: len(finalFile)-1 : len(finalFile)-1]
+										finalFile = append(finalFile, apiStr)
+										mark = true
+									}
+								} else {
+									if apiData["path"] != rawData["path"] || apiData["handlers"] != rawData["handlers"] || apiData["method"] != rawData["method"] {
+										// 删除再插入
+										finalFile = finalFile[: len(finalFile)-1 : len(finalFile)-1]
+										finalFile = append(finalFile, apiStr)
+										mark = true
+									}
+								}
+							}
+
 						} else if strings.TrimSpace(bodySlice[k-1]) != strings.TrimSpace(apiStr) {
+							// 直接插入
 							finalFile = append(finalFile, apiStr)
-							// fileName = file.Name()
 							mark = true
 						}
 					} else {
+						// 直接插入
 						finalFile = append(finalFile, apiStr)
-						// fileName = file.Name()
 						mark = true
 					}
 				}
@@ -130,7 +185,7 @@ func ReformatFile(rootPath string, ignoreFolders []string, fileSuffix string) er
 	return nil
 }
 
-func appendAPIsNew(src string) (apiStr string, err error) {
+func appendAPIsNew(src string) (apiStr string, param string, err error) {
 	if strings.Contains(src, ".QueryValue(\"") && strings.Contains(src, "\")") && !strings.Contains(src, "//") {
 		i := strings.Index(src, ".QueryValue(\"")
 		f := strings.Index(src, "\")")
@@ -138,7 +193,7 @@ func appendAPIsNew(src string) (apiStr string, err error) {
 
 		query := "// @ApiQuery(key=\"" + key + "\", desc= \"\", value=\"\")"
 
-		return query, nil
+		return query, "ApiQuery", nil
 
 	} else if strings.Contains(src, ".FormValue(\"") && strings.Contains(src, "\")") && !strings.Contains(src, "//") {
 		i := strings.Index(src, ".FormValue(\"")
@@ -147,7 +202,8 @@ func appendAPIsNew(src string) (apiStr string, err error) {
 
 		body := "// @ApiBody(key=\"" + key + "\", desc=\"\", value=\"\")"
 
-		return body, nil
+		return body, "ApiBody", nil
+
 	} else if strings.Contains(src, ".Header.Get(\"") && strings.Contains(src, "\")") && !strings.Contains(src, "//") {
 		i := strings.Index(src, ".Header.Get(\"")
 		f := strings.Index(src, "\")")
@@ -155,20 +211,20 @@ func appendAPIsNew(src string) (apiStr string, err error) {
 
 		// @ApiHeader(key="header",value="value",desc="header description")
 		header := "// @ApiHeader(key=\"" + key + "\", desc=\"\", value=\"\")"
-		return header, nil
+		return header, "ApiHeader", nil
 
 		// } else if strings.Contains(src, ".GROUP(\"") && !strings.Contains(src, "//") {
 	} else if !strings.Contains(src, "//") {
 		r, err := parseRouterGroupProperties(src)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 
 		if r != "" {
-			return r, nil
+			return r, "ApiRouter", nil
 		}
 	}
-	return "", nil
+	return "", "", nil
 }
 
 func parseRouterGroupProperties(src string) (apiStr string, err error) {
