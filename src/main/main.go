@@ -26,7 +26,7 @@ func main() {
 	format := flag.Bool("format", false, "write API to your files, package HttpDispatch only")
 	flag.Parse()
 
-	*ignoreFile = "vendor|action|model|main"
+	// *ignoreFile = "vendor|action|model|main"
 	// *format = true
 	// *specify = ".go"
 
@@ -35,8 +35,10 @@ func main() {
 		ignoreFiles[k] = strings.TrimSpace(ignoreFiles[k])
 	}
 
+	action.HandlerMap = make(map[string][]action.RawHandlerStruct)
+	action.ProjectFiles = make(map[string][]action.AllFiles)
+
 	if *format {
-		action.ProjectFiles = make(map[string][]action.AllFiles)
 
 		err = action.ReformFile(*rootPath, ignoreFiles)
 		if err != nil {
@@ -76,6 +78,11 @@ func main() {
 		log.Println(err.Error())
 		return
 	}
+
+	// for k := range action.HandlerMap {
+	// 	log.Println(k, action.HandlerMap[k])
+	// 	log.Println("--------------------------------------------")
+	// }
 
 	// 把处理器中的所有参数传入路由 ------------------------------------------------
 	for k := range routers {

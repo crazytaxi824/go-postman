@@ -9,11 +9,10 @@ import (
 
 // SaveHandlers 将handler和对应的body放入 handlerMap 缓存中
 func SaveHandlers(handlers []string) {
-	handlerMap = make(map[string][]RawHandlerStruct)
-
 	var handlerIndex []int
 	for k, h := range handlers {
 		if strings.Contains(h, "@ApiHandler") {
+			log.Println(h)
 			handlerIndex = append(handlerIndex, k)
 		}
 	}
@@ -177,6 +176,6 @@ func passQueryBodyHeaderToHandler(handler, handlerName string) error {
 		}
 	}
 
-	handlerMap[handlerName] = append(handlerMap[handlerName], handlerStruct)
+	HandlerMap[handlerName] = append(HandlerMap[handlerName], handlerStruct)
 	return nil
 }

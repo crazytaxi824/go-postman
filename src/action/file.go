@@ -18,8 +18,6 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 		}
 	}()
 
-	var rawHandlerSlice []string
-
 	files, err := ioutil.ReadDir(rootPath)
 	if err != nil {
 		return err
@@ -31,6 +29,8 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 				ReadAllFiles(rootPath+"/"+file.Name(), serverPath, ignoreFolders, routers, fileSuffix)
 			}
 		} else {
+			var rawHandlerSlice []string
+
 			if fileSuffix != "" {
 				if path.Ext(file.Name()) != fileSuffix {
 					continue

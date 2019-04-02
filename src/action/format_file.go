@@ -147,6 +147,14 @@ func appendAPIsNew(src string) (apiStr string, err error) {
 		body := "// @ApiBody(key=\"" + key + "\", desc=\"\", value=\"\")"
 
 		return body, nil
+	} else if strings.Contains(src, ".Header.Get(\"") && strings.Contains(src, "\")") && !strings.Contains(src, "//") {
+		i := strings.Index(src, ".Header.Get(\"")
+		f := strings.Index(src, "\")")
+		key := strings.TrimSpace(src[i+13 : f])
+
+		// @ApiHeader(key="header",value="value",desc="header description")
+		header := "// @ApiHeader(key=\"" + key + "\", desc=\"\", value=\"\")"
+		return header, nil
 
 		// } else if strings.Contains(src, ".GROUP(\"") && !strings.Contains(src, "//") {
 	} else if !strings.Contains(src, "//") {
@@ -220,18 +228,18 @@ func (router *FindRouters) genRouterAPI(src string) (string, error) {
 		// 添加到 rootRouterGroups
 		rootRouterGroups = append(rootRouterGroups, *router)
 
-		routerNameSlice := strings.Split(router.Path, "/")
-		var routerName string
-		lenName := len(routerNameSlice)
-		if lenName < 1 {
-			return "", errors.New("no path")
-		} else if lenName < 2 {
-			routerName = routerNameSlice[0]
-		} else {
-			routerName = strings.TrimSpace(strings.Join(routerNameSlice[lenName-2:], " "))
-		}
+		// routerNameSlice := strings.Split(router.Path, "/")
+		// var routerName string
+		// lenName := len(routerNameSlice)
+		// if lenName < 1 {
+		// 	return "", errors.New("no path")
+		// } else if lenName < 2 {
+		// 	routerName = routerNameSlice[0]
+		// } else {
+		// 	routerName = strings.TrimSpace(strings.Join(routerNameSlice[lenName-2:], " "))
+		// }
 
-		apiStr := "// @ApiRouter(name=\"" + routerName + "\", method=\"" + router.Method + "\", path=\"" + router.Path + "\", group=\"" + router.ParentName + "\", handlers=\"" + strings.Join(router.HandlersName, ",") + "\")"
+		apiStr := "// @ApiRouter(name=\"" + router.Path + "\", method=\"" + router.Method + "\", path=\"" + router.Path + "\", group=\"" + router.ParentName + "\", handlers=\"" + strings.Join(router.HandlersName, ",") + "\")"
 
 		return apiStr, nil
 	}
@@ -266,17 +274,17 @@ func (router *FindRouters) genRouterAPI(src string) (string, error) {
 	// 添加到 rootRouterGroups
 	rootRouterGroups = append(rootRouterGroups, *router)
 
-	routerNameSlice := strings.Split(router.Path, "/")
-	var routerName string
-	lenName := len(routerNameSlice)
-	if lenName < 1 {
-		return "", errors.New("no path")
-	} else if lenName < 2 {
-		routerName = routerNameSlice[0]
-	} else {
-		routerName = strings.TrimSpace(strings.Join(routerNameSlice[lenName-2:], " "))
-	}
-	apiStr := "// @ApiRouter(name=\"" + routerName + "\", method=\"" + router.Method + "\", path=\"" + router.Path + "\", group=\"" + group.ParentName + "\", handlers=\"" + strings.Join(router.HandlersName, ",") + "\")"
+	// routerNameSlice := strings.Split(router.Path, "/")
+	// var routerName string
+	// lenName := len(routerNameSlice)
+	// if lenName < 1 {
+	// 	return "", errors.New("no path")
+	// } else if lenName < 2 {
+	// 	routerName = routerNameSlice[0]
+	// } else {
+	// 	routerName = strings.TrimSpace(strings.Join(routerNameSlice[lenName-2:], " "))
+	// }
+	apiStr := "// @ApiRouter(name=\"" + router.Path + "\", method=\"" + router.Method + "\", path=\"" + router.Path + "\", group=\"" + group.ParentName + "\", handlers=\"" + strings.Join(router.HandlersName, ",") + "\")"
 
 	return apiStr, nil
 }
