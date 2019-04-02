@@ -229,7 +229,7 @@ func (router *FindRouters) genRouterAPI(src string) (string, error) {
 		// 添加到 rootRouterGroups
 		rootRouterGroups = append(rootRouterGroups, *router)
 
-		apiStr := "// @ApiRouter(path=\"" + router.Path + "\", method=\"" + router.Method + "\", group=\"" + router.ParentName + "\", handlers=\"" + strings.Join(router.HandlersName, ",") + "\")"
+		apiStr := "// @ApiRouter(path=\"" + router.Path + "\", desc=\"\", method=\"" + router.Method + "\", group=\"" + router.ParentName + "\", handlers=\"" + strings.Join(router.HandlersName, ",") + "\")"
 
 		return apiStr, nil
 	}
@@ -264,7 +264,7 @@ func (router *FindRouters) genRouterAPI(src string) (string, error) {
 	// 添加到 rootRouterGroups
 	rootRouterGroups = append(rootRouterGroups, *router)
 
-	apiStr := "// @ApiRouter(path=\"" + router.Path + "\", method=\"" + router.Method + "\", group=\"" + group.ParentName + "\", handlers=\"" + strings.Join(router.HandlersName, ",") + "\")"
+	apiStr := "// @ApiRouter(path=\"" + router.Path + "\", desc=\"\", method=\"" + router.Method + "\", group=\"" + group.ParentName + "\", handlers=\"" + strings.Join(router.HandlersName, ",") + "\")"
 
 	return apiStr, nil
 }

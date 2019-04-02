@@ -110,7 +110,7 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 				}
 			}
 			// 分析 handler, body, query, header
-			SaveHandlers(rawHandlerSlice)
+			FormatHandlers(rawHandlerSlice)
 		}
 	}
 	return nil

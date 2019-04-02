@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-// SaveHandlers 将handler和对应的body放入 handlerMap 缓存中
-func SaveHandlers(handlers []string) {
+// FormatHandlers 将handler和对应的body放入 handlerMap 缓存中
+func FormatHandlers(handlers []string) {
 	var handlerIndex []int
 	for k, h := range handlers {
 		if strings.Contains(h, "@ApiHandler") {
