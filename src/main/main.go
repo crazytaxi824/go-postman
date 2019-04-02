@@ -79,11 +79,6 @@ func main() {
 		return
 	}
 
-	// for k := range action.HandlerMap {
-	// 	log.Println(k, action.HandlerMap[k])
-	// 	log.Println("--------------------------------------------")
-	// }
-
 	// 把处理器中的所有参数传入路由 ------------------------------------------------
 	for k := range routers {
 		routers[k].HandlersToRouters()

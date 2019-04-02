@@ -10,7 +10,7 @@ import (
 var JSON = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // routerNameSlice 去重用，router name 不能重复，否则只会留下第一个
-var routerNameSlice []string
+// var routerNameSlice []string
 
 // routerPathSlice 去重用，router path 不能重复，否则只会留下第一个
 var routerPathSlice []string
@@ -20,7 +20,7 @@ var HandlerMap map[string][]RawHandlerStruct
 
 // RawRouterStruct RawRouterStruct
 type RawRouterStruct struct {
-	RouterName   string `json:"name"`
+	// RouterName   string `json:"name"`
 	Method       string `json:"method"`
 	RouterPath   string `json:"path"`
 	GroupName    string `json:"group"`

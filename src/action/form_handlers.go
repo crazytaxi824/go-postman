@@ -12,7 +12,6 @@ func SaveHandlers(handlers []string) {
 	var handlerIndex []int
 	for k, h := range handlers {
 		if strings.Contains(h, "@ApiHandler") {
-			log.Println(h)
 			handlerIndex = append(handlerIndex, k)
 		}
 	}

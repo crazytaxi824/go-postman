@@ -85,10 +85,10 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 								}
 
 								// 判断router 是否存在，是否重名，去重用
-								if inSlice(router.RouterName, routerNameSlice) {
-									log.Println("warning: duplicate Router Name @ApiRouter —— name: \"" + router.RouterName + "\"")
-									continue
-								}
+								// if inSlice(router.RouterName, routerNameSlice) {
+								// 	log.Println("warning: duplicate Router Name @ApiRouter —— name: \"" + router.RouterName + "\"")
+								// 	continue
+								// }
 
 								if inSlice(router.RouterPath, routerPathSlice) {
 									log.Println("warning: duplicate Router Path @ApiRouter —— path: \"" + router.RouterPath + "\"")
@@ -105,7 +105,7 @@ func ReadAllFiles(rootPath string, serverPath *string, ignoreFolders []string, r
 
 								*routers = append(*routers, router)
 
-								routerNameSlice = append(routerNameSlice, router.RouterName)
+								// routerNameSlice = append(routerNameSlice, router.RouterName)
 								routerPathSlice = append(routerPathSlice, router.RouterPath)
 							}
 						} else if strings.Contains(trimBody, "@ApiHandler") || strings.Contains(trimBody, "@ApiQuery") || strings.Contains(trimBody, "@ApiBody") || strings.Contains(trimBody, "@ApiHeader") {

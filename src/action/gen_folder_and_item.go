@@ -12,7 +12,7 @@ func GenFolderAndItemStruct(groups map[string][]RawRouterStruct) (folders []mode
 
 			for _, r := range groups[folderName] {
 				var router model.RouterStruct
-				router.Name = r.RouterName
+				router.Name = r.RouterPath
 				router.Response = make([]interface{}, 0)
 				router.Request.URL = r.URL
 				router.Request.Method = r.Method
@@ -26,7 +26,7 @@ func GenFolderAndItemStruct(groups map[string][]RawRouterStruct) (folders []mode
 		} else {
 			for _, r := range groups[folderName] {
 				var router model.RouterStruct
-				router.Name = r.RouterName
+				router.Name = r.RouterPath
 				router.Response = make([]interface{}, 0)
 				router.Request.URL = r.URL
 				router.Request.Method = r.Method
