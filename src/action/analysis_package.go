@@ -211,8 +211,6 @@ func (h *HandlerPropStruct) analysisHandlerVarStruct() error {
 			}
 		}
 	}
-	log.Println(h.FullName, h.HandlerPackageName, h.HandlerFuncName, h.VarStructs)
-
 	return nil
 }
 

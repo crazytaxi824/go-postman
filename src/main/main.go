@@ -55,7 +55,7 @@ func main() {
 		for _, files := range action.ProjectFiles {
 			for _, file := range files {
 				if file.FormatMark {
-					// log.Println("file formated: " + file.FileName)
+					log.Println("file formated: " + file.FileName)
 
 					// 写文件
 					err = action.WriteFiles(file.FileName, []byte(file.Content))
