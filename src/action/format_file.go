@@ -102,6 +102,8 @@ func ReformatFile(rootPath string, ignoreFolders []string, fileSuffix string) er
 									finalFile = finalFile[: len(finalFile)-1 : len(finalFile)-1]
 									finalFile = append(finalFile, apiStr)
 									mark = true
+									finalFile = append(finalFile, str)
+									continue
 								}
 
 								r, err := ParsePMstructToJSONformat(strings.TrimSpace(tmp[1]))
@@ -110,6 +112,8 @@ func ReformatFile(rootPath string, ignoreFolders []string, fileSuffix string) er
 									finalFile = finalFile[: len(finalFile)-1 : len(finalFile)-1]
 									finalFile = append(finalFile, apiStr)
 									mark = true
+									finalFile = append(finalFile, str)
+									continue
 								}
 
 								rawData := make(map[string]string)
@@ -119,6 +123,8 @@ func ReformatFile(rootPath string, ignoreFolders []string, fileSuffix string) er
 									finalFile = finalFile[: len(finalFile)-1 : len(finalFile)-1]
 									finalFile = append(finalFile, apiStr)
 									mark = true
+									finalFile = append(finalFile, str)
+									continue
 								}
 
 								tmpAPI := strings.Split(apiStr, param)
@@ -141,6 +147,8 @@ func ReformatFile(rootPath string, ignoreFolders []string, fileSuffix string) er
 										finalFile = finalFile[: len(finalFile)-1 : len(finalFile)-1]
 										finalFile = append(finalFile, apiStr)
 										mark = true
+										finalFile = append(finalFile, str)
+										continue
 									}
 								} else {
 									if apiData["path"] != rawData["path"] || apiData["handlers"] != rawData["handlers"] || apiData["method"] != rawData["method"] {
@@ -148,6 +156,8 @@ func ReformatFile(rootPath string, ignoreFolders []string, fileSuffix string) er
 										finalFile = finalFile[: len(finalFile)-1 : len(finalFile)-1]
 										finalFile = append(finalFile, apiStr)
 										mark = true
+										finalFile = append(finalFile, str)
+										continue
 									}
 								}
 							}
@@ -156,15 +166,20 @@ func ReformatFile(rootPath string, ignoreFolders []string, fileSuffix string) er
 							// 直接插入
 							finalFile = append(finalFile, apiStr)
 							mark = true
+							finalFile = append(finalFile, str)
+							continue
 						}
 					} else {
 						// 直接插入
 						finalFile = append(finalFile, apiStr)
 						mark = true
+						finalFile = append(finalFile, str)
+						continue
 					}
 				}
 
 				finalFile = append(finalFile, str)
+				continue
 			}
 
 			// 存入 fileName 和 全部数据
